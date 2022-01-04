@@ -11,6 +11,7 @@
 #include <rtthread.h>
 #include "little.h"
 #include "file.h"
+#include "Radio_Encoder.h"
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -20,6 +21,12 @@ int main(void)
 {
     flash_Init();
     ID_Init();
+    rf_433_start();
+    rf_4068_start();
+    RadioQueueInit();
+    led_Init();
+    button_init();
+    //heart_init();
     while (1)
     {
         rt_thread_mdelay(1000);

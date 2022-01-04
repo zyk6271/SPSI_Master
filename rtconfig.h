@@ -5,7 +5,7 @@
 
 /* RT-Thread Kernel */
 
-#define RT_NAME_MAX 8
+#define RT_NAME_MAX 16
 #define RT_ALIGN_SIZE 4
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
@@ -14,10 +14,10 @@
 #define RT_USING_HOOK
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define IDLE_THREAD_STACK_SIZE 256
+#define IDLE_THREAD_STACK_SIZE 1024
 #define RT_USING_TIMER_SOFT
 #define RT_TIMER_THREAD_PRIO 4
-#define RT_TIMER_THREAD_STACK_SIZE 512
+#define RT_TIMER_THREAD_STACK_SIZE 1024
 
 /* kservice optimization */
 
@@ -38,6 +38,7 @@
 
 #define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
+#define RT_USING_MEMTRACE
 #define RT_USING_HEAP
 /* end of Memory Management */
 
@@ -222,6 +223,16 @@
 
 /* peripheral libraries and drivers */
 
+#define PKG_USING_AGILE_BUTTON
+#define PKG_AGILE_BUTTON_DEBUG
+#define PKG_AGILE_BUTTON_THREAD_STACK_SIZE 1024
+#define PKG_AGILE_BUTTON_THREAD_PRIORITY 15
+#define PKG_AGILE_BUTTON_USING_EXAMPLE
+#define PKG_USING_AGILE_BUTTON_LATEST_VERSION
+#define PKG_USING_AGILE_LED
+#define PKG_AGILE_LED_THREAD_STACK_SIZE 1024
+#define PKG_AGILE_LED_THREAD_PRIORITY 14
+#define PKG_USING_AGILE_LED_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 
 /* AI packages */

@@ -113,34 +113,6 @@ void RadioXtalON(struct ax5043 *dev)
     SpiWriteSingleAddressRegister(dev,REG_AX5043_PWRMODE, AX5043_PWRSTATE_XTAL_ON);
     while (dev->ubRFState == trxstate_wait_xtal);
 }
-void ChangeMaxPower(struct ax5043 *dev)
-{
-    if(dev->axradio_power_now==0)
-    {
-        dev->axradio_power_now = 1;
-        SpiWriteLongAddressRegister(dev,REG_AX5043_TXPWRCOEFFB1, 0x0C);
-        SpiWriteLongAddressRegister(dev,REG_AX5043_TXPWRCOEFFB0, 0x00);
-        LOG_D("ChangeMaxPower Now\r\n");
-    }
-    else
-    {
-        LOG_D("Power Already Max\r\n");
-    }
-}
-void BackNormalPower(struct ax5043 *dev)
-{
-    if(dev->axradio_power_now)
-    {
-        dev->axradio_power_now = 0;
-        SpiWriteLongAddressRegister(dev,REG_AX5043_TXPWRCOEFFB1, 0x02);
-        SpiWriteLongAddressRegister(dev,REG_AX5043_TXPWRCOEFFB0, 0xEB);
-        LOG_D("BackNormalPower Now\r\n");
-    }
-    else
-    {
-        LOG_D("Power Already Normal\r\n");
-    }
-}
 void AX5043ReceiverON(struct ax5043 *dev)
 {
     SpiWriteLongAddressRegister(dev,REG_AX5043_RSSIREFERENCE, 0x19);
@@ -157,8 +129,7 @@ void AX5043Receiver_Continuous(struct ax5043 *dev)
     uint32_t ubTemp=0;
 
     SpiWriteSingleAddressRegister(dev,REG_AX5043_RADIOEVENTMASK0, 0x04);
-
-    SpiWriteLongAddressRegister(dev,REG_AX5043_RSSIREFERENCE, 0x40);
+    SpiWriteLongAddressRegister(dev,REG_AX5043_RSSIREFERENCE, dev->config->axradio_phy_rssireference);
 
     SpiWriteLongAddressRegister(dev,REG_AX5043_TMGRXAGC, 0);
     SpiWriteLongAddressRegister(dev,REG_AX5043_TMGRXPREAMBLE1, 0);
@@ -228,10 +199,11 @@ void ReceiveData(struct ax5043 *dev)
             case AX5043_FIFOCMD_RSSI:
                 if (ubDataLen != 1)
                     goto dropchunk;
-                dev->ubRssi = SpiReadUnderSingleAddressRegister(dev,REG_AX5043_FIFODATA)-64;
-                LOG_D("%s recv rssi %d\r\n",dev->name,dev->ubRssi);
+                {
+                    int8_t r = SpiReadSingleAddressRegister(dev,REG_AX5043_FIFODATA);
+                    dev->ubRssi = r - (int16_t)dev->config->axradio_phy_rssioffset;
+                }
                 break;
-
             case AX5043_FIFOCMD_TIMER:
                 if (ubDataLen != 3)
                     goto dropchunk;
@@ -239,6 +211,14 @@ void ReceiveData(struct ax5043 *dev)
                 SpiReadSingleAddressRegister(dev,REG_AX5043_FIFODATA);
                 SpiReadSingleAddressRegister(dev,REG_AX5043_FIFODATA);
                 break;
+            case AX5043_FIFOCMD_ANTRSSI:
+                if (!ubDataLen)
+                    break;
+                {
+                    SpiReadSingleAddressRegister(dev,REG_AX5043_FIFODATA);
+                }
+                --ubDataLen;
+                goto dropchunk;
             default:
             dropchunk:
                 if (!ubDataLen)
@@ -357,7 +337,6 @@ void TransmitData(struct ax5043 *dev)
                 SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,3);//AX5043_FIFODATA = flags=0x03;
                 SpiWriteData(dev,dev->TXBuff,dev->TxLen);          //ax5043_writefifo(&axradio_txbuffer[axradio_txbuffer_cnt], cnt);
                 goto pktend;
-                break;
             default:
                 return;
         }
@@ -370,15 +349,15 @@ void TransmitData(struct ax5043 *dev)
         SpiWriteSingleAddressRegister(dev,REG_AX5043_RADIOEVENTMASK0, 0x01); // enable REVRDONE event
         SpiWriteSingleAddressRegister(dev,REG_AX5043_IRQMASK0, 0x40); // enable radio controller irq
 }
-void transmit_packet_task(struct ax5043 *dev,uint8_t *Buf, uint8_t u8Len)
+void transmit_packet_task(struct ax5043 *dev,uint8_t *Buf, uint8_t Length)
 {
     SpiWriteSingleAddressRegister(dev,REG_AX5043_PWRMODE, AX5043_PWRSTATE_XTAL_ON); //AX5043_PWRMODE = AX5043_PWRSTATE_XTAL_ON;    Crystal Oscillator enabled
     SpiWriteSingleAddressRegister(dev,REG_AX5043_PWRMODE, AX5043_PWRSTATE_FIFO_ON); //AX5043_PWRMODE = AX5043_PWRSTATE_FIFO_ON;    FIFO enabled
     Ax5043SetRegisters_TX(dev);
-    dev->TxLen = u8Len;
+    dev->TxLen = Length;
     dev->TxLen++;
     dev->TXBuff[0] = dev->TxLen;
-    memcpy(dev->TXBuff+1, Buf, u8Len);
+    memcpy(dev->TXBuff+1, Buf, Length);
     SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFOTHRESH1, 0x00);  //AX5043_FIFOTHRESH1(0x2E) = 0;
     SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFOTHRESH0, 0x80);  //AX5043_FIFOTHRESH0(0x2F) = 0x80;
     dev->ubRFState = trxstate_tx_xtalwait;
@@ -386,10 +365,10 @@ void transmit_packet_task(struct ax5043 *dev,uint8_t *Buf, uint8_t u8Len)
     SpiWriteSingleAddressRegister(dev,REG_AX5043_IRQMASK1, 0x01);     //AX5043_IRQMASK1 = 0x01; // enable xtal ready interrupt
     SpiReadSingleAddressRegister(dev,REG_AX5043_POWSTICKYSTAT);
 }
-void Normal_send(struct ax5043 *dev,uint8_t *Buf, uint8_t u8Len)
+void Normal_send(struct ax5043 *dev,uint8_t *Buf, uint8_t Length)
 {
     dev->axradio_txbuffer_cnt = 0;
-    transmit_packet_task(dev,Buf,u8Len);
+    transmit_packet_task(dev,Buf,Length);
 }
 int16_t axradio_tunevoltage(struct ax5043 *dev)
 {

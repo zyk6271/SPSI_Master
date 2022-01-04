@@ -98,7 +98,7 @@ void write_file_2(char *buf,uint32_t size)
 void delete_file_1(void)
 {
     char *buf = rt_malloc(64);
-    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Test:\n");
+    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
     LOG_D("%s\r\n",buf);
     unlink("/1.txt");
     write_file_1(buf,strlen(buf));
@@ -109,7 +109,7 @@ MSH_CMD_EXPORT(delete_file_1,delete_file_1);
 void delete_file_2(void)
 {
     char *buf = rt_malloc(64);
-    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Test:\n");
+    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
     LOG_D("%s\r\n",buf);
     unlink("/2.txt");
     LOG_I("txt 2 is delete/r/n");

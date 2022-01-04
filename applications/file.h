@@ -10,6 +10,9 @@
 #ifndef APPLICATIONS_FILE_H_
 #define APPLICATIONS_FILE_H_
 
+#include "stdint.h"
+
 void ID_Init(void);
+void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button);
 
 #endif /* APPLICATIONS_FILE_H_ */

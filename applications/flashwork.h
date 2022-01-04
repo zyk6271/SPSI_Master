@@ -12,5 +12,7 @@
 
 uint32_t Flash_Get_IDNums(void);
 void Flash_IDNums_Change(uint32_t value);
+uint32_t Flash_Get_Boot(void);
+void Flash_Boot_Change(uint32_t value);
 
 #endif /* APPLICATIONS_FLASHWORK_H_ */

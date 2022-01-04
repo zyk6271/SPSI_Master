@@ -23,6 +23,8 @@
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
 
+struct ax5043 rf_433;
+
 rt_sem_t IRQ1_Sem=RT_NULL;
 rt_thread_t rf_433_task=RT_NULL;
 rt_timer_t rf_433_send_timer = RT_NULL;
@@ -50,6 +52,8 @@ struct ax5043_config *rf_433_config_init(void)
     config->axradio_phy_chanvcoiinit[0] = 0x99;
     config->axradio_phy_chanpllrnginit[0] = 0x0a;
     config->axradio_phy_maxfreqoffset = 1683;
+    config->axradio_phy_rssireference = 0x3A;
+    config->axradio_phy_rssioffset = 64;
     return config;
 }
 void rf_433_sem_init(void)
@@ -96,7 +100,7 @@ void rf_433_task_callback(void *parameter)
                 AX5043Receiver_Continuous(&rf_433);
                 if (rf_433.RxLen != 0)
                 {
-                    rf433_rx_callback(rf_433.RXBuff,rf_433.RxLen);
+                    rf433_rx_callback(rf_433.ubRssi,rf_433.RXBuff,rf_433.RxLen);
                 }
                 break;
             case trxstate_wait_xtal:     //3
@@ -158,9 +162,7 @@ void rf_433_start(void)
     rt_thread_startup(rf_433_task);
     rf_433_send_timer = rt_timer_create("rf_433_send timeout", rf_433_send_timer_callback, RT_NULL, 120, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
     rf_433_init();
-    LOG_I("Radio 433 Init success\r\n");
 }
-MSH_CMD_EXPORT(rf_433_start,rf_433_start);
 uint8_t buf[]={0x31,0x31,0x32,0x32,0x33,0x33,0x34,0x34,0x35,0x35,0x36,0x36,0x37,0x37};
 void sendtest(void)
 {

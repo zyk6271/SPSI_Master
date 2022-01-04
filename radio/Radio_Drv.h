@@ -17,7 +17,6 @@ struct ax5043
     struct ax5043_config *config;
     char name[10];
     int ubRssi;
-    uint8_t axradio_power_now;
     uint8_t ubRFState;
     uint8_t TXBuff[64];
     uint8_t TxLen;
@@ -41,15 +40,13 @@ struct ax5043_config
     uint8_t axradio_phy_chanvcoiinit[1];
     uint8_t axradio_phy_chanpllrnginit[1];
     int  axradio_phy_maxfreqoffset;
+    int8_t axradio_phy_rssioffset;
+    int8_t axradio_phy_rssireference;
 };
-struct ax5043 rf_433;
-struct ax5043 rf_4068;
 
 void IRQ1_Bounding(void);
 void IRQ2_Bounding(void);
 void Ax5043_Spi_Init(void);
-void SpiWriteByte(struct ax5043 *dev,uint8_t ubByte);
-void SpiWriteWord(struct ax5043 *dev,uint16_t ubByte);
 void Ax5043_Spi_Reset(struct ax5043 *dev);
 void SpiWriteSingleAddressRegister(struct ax5043 *dev,uint8_t Addr, uint8_t Data);
 void SpiWriteLongAddressRegister(struct ax5043 *dev,uint16_t Addr, uint8_t Data);
@@ -57,9 +54,7 @@ void SpiLongWriteLongAddressRegister(struct ax5043 *dev,uint16_t Addr, uint16_t 
 void SpiWriteData(struct ax5043 *dev,uint8_t *pBuf,uint8_t Length);
 void SpiReadData(struct ax5043 *dev,uint8_t *pBuf,uint8_t Length);
 uint8_t SpiReadSingleAddressRegister(struct ax5043 *dev,uint8_t Addr);
-uint8_t SpiReadByte( struct ax5043 *dev );
 uint8_t SpiReadLongAddressRegister(struct ax5043 *dev,uint16_t Addr);
-int8_t SpiReadUnderSingleAddressRegister(struct ax5043 *dev,uint8_t Addr);
 struct rt_spi_device *rf_433_radio_spi_init(void);
 struct rt_spi_device *rf_4068_radio_spi_init(void);
 

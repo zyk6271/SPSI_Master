@@ -1,30 +1,23 @@
 #ifndef RADIO_H_
 #define RADIO_H_
 
-#define XTAL_FREQ   26000000
-#define XTAL_FREQ_1     26
-#define CHANNEL_BW      100
-
-enum
-{
-    trxstate_off = 0,
-    trxstate_rx,
-    trxstate_rxwor,
-    trxstate_wait_xtal,
-    trxstate_xtal_ready,
-    trxstate_pll_ranging,
-    trxstate_pll_ranging_done,
-    trxstate_pll_settling,
-    trxstate_pll_settled,
-    trxstate_tx_xtalwait,
-    trxstate_tx_longpreamble,
-    trxstate_tx_shortpreamble,
-    trxstate_tx_packet,
-    trxstate_tx_waitdone,
-    trxstate_txcw_xtalwait,
-    trxstate_txstream_xtalwait,
-    trxstate_txstream
-}RF_State;
+#define trxstate_off                            0x00
+#define trxstate_rx                             0x01
+#define trxstate_rxwor                          0x02
+#define trxstate_wait_xtal                      0x03
+#define trxstate_xtal_ready                     0x04
+#define trxstate_pll_ranging                    0x05
+#define trxstate_pll_ranging_done               0x06
+#define trxstate_pll_settling                   0x07
+#define trxstate_pll_settled                    0x08
+#define trxstate_tx_xtalwait                    0x09
+#define trxstate_tx_longpreamble                0x0A
+#define trxstate_tx_shortpreamble               0x0B
+#define trxstate_tx_packet                      0x0C
+#define trxstate_tx_waitdone                    0x0D
+#define trxstate_txcw_xtalwait                  0x0E
+#define trxstate_txstream_xtalwait              0x0F
+#define trxstate_txstream                       0x10
 
 #define AXRADIO_MODE_UNINIT                     0x00
 #define AXRADIO_MODE_OFF                        0x01

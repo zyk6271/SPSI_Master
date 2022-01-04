@@ -12,22 +12,22 @@
 //SW
 #define SW1                   12
 //LED
-#define LED1_G                8
-#define LED1_R                41
-#define LED2_G                40
-#define LED2_R                39
-#define LED3_G                22
-#define LED3_R                21
-#define LED4_G                20
-#define LED4_R                19
-#define LED5_G                32
-#define LED5_R                33
-#define LED6_G                34
-#define LED6_R                35
-#define LED7_G                36
-#define LED7_R                16
-#define LED8_G                17
-#define LED8_R                18
+#define LED1_G_Pin                8
+#define LED1_R_Pin                41
+#define LED2_G_Pin                40
+#define LED2_R_Pin                39
+#define LED3_G_Pin                22
+#define LED3_R_Pin                21
+#define LED4_G_Pin                20
+#define LED4_R_Pin                19
+#define LED5_G_Pin                32
+#define LED5_R_Pin                33
+#define LED6_G_Pin                34
+#define LED6_R_Pin                35
+#define LED7_G_Pin                37
+#define LED7_R_Pin                16
+#define LED8_G_Pin                17
+#define LED8_R_Pin                18
 //BUZZER
 #define BUZZER                26
 //SIGNAL

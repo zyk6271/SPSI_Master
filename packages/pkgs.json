@@ -13,5 +13,15 @@
   "path": "/packages/system/littlefs", 
   "ver": "latest", 
   "name": "LITTLEFS"
+ }, 
+ {
+  "path": "/packages/peripherals/agile_button", 
+  "ver": "latest", 
+  "name": "AGILE_BUTTON"
+ }, 
+ {
+  "path": "/packages/peripherals/agile_led", 
+  "ver": "latest", 
+  "name": "AGILE_LED"
  }
 ]

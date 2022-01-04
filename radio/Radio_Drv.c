@@ -105,23 +105,6 @@ void Ax5043_Spi_Reset(struct ax5043 *dev)
     msg[1] = 0x80 ;
     rt_spi_send(dev->socket,msg,2);
 }
-void SpiWriteByte(struct ax5043 *dev,uint8_t ubByte)
-{
-    rt_spi_send(dev->socket,&ubByte,1);
-}
-void SpiWriteWord(struct ax5043 *dev,uint16_t ubByte)
-{
-    uint8_t msg[2] = {0};
-    msg[0] = ( ubByte & 0xFF00 ) >> 8;
-    msg[1] = ubByte & 0x00FF;
-    rt_spi_send(dev->socket,msg,2);
-}
-uint8_t SpiReadByte(struct ax5043 *dev)
-{
-    uint8_t data;
-    rt_spi_recv(dev->socket,&data,1);
-    return data;
-}
 void SpiWriteSingleAddressRegister(struct ax5043 *dev,uint8_t Addr, uint8_t Data)
 {
     uint8_t ubAddr = Addr|0x80;
@@ -143,14 +126,6 @@ void SpiWriteData(struct ax5043 *dev,uint8_t *pBuf,uint8_t Length)
     rt_spi_send_then_send(dev->socket,&data,1,pBuf,Length);
 }
 uint8_t SpiReadSingleAddressRegister(struct ax5043 *dev,uint8_t Addr)
-{
-    uint8_t ubAddr ;
-    uint8_t RcvAddr ;
-    ubAddr = Addr&0x7F ;//read common bit7=0
-    rt_spi_send_then_recv(dev->socket,&ubAddr,1,&RcvAddr,1);
-    return RcvAddr ;
-}
-int8_t SpiReadUnderSingleAddressRegister(struct ax5043 *dev,uint8_t Addr)//负数
 {
     uint8_t ubAddr ;
     uint8_t RcvAddr ;

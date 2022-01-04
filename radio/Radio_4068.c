@@ -11,6 +11,7 @@
 #include <rtdevice.h>
 #include "drv_spi.h"
 #include <string.h>
+#include <stdio.h>
 #include "AX5043.h"
 #include "Radio_Common.h"
 #include "pin_config.h"
@@ -22,6 +23,8 @@
 #define DBG_TAG "radio_4068"
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
+
+struct ax5043 rf_4068;
 
 rt_sem_t IRQ2_Sem=RT_NULL;
 rt_thread_t rf_4068_task=RT_NULL;
@@ -50,6 +53,8 @@ struct ax5043_config *rf_4068_config_init(void)
     config->axradio_phy_chanvcoiinit[0] = 0x00;
     config->axradio_phy_chanpllrnginit[0] = 0xFF;
     config->axradio_phy_maxfreqoffset = 157;
+    config->axradio_phy_rssireference = 0x3A;
+    config->axradio_phy_rssioffset = 64;
     return config;
 }
 void rf_4068_sem_init(void)
@@ -96,7 +101,7 @@ void rf_4068_task_callback(void *parameter)
                 AX5043Receiver_Continuous(&rf_4068);
                 if (rf_4068.RxLen != 0)
                 {
-                    rf4068_rx_callback(rf_4068.RXBuff,rf_4068.RxLen);
+                    rf4068_rx_callback(rf_4068.ubRssi,rf_4068.RXBuff,rf_4068.RxLen);
                 }
                 break;
             case trxstate_wait_xtal:     //3
@@ -158,9 +163,7 @@ void rf_4068_start(void)
     rt_thread_startup(rf_4068_task);
     rf_4068_send_timer = rt_timer_create("rf_4068_send timeout", rf_4068_send_timer_callback, RT_NULL, 120, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
     rf_4068_Init();
-    LOG_I("Radio 4068 Init success\r\n");
 }
-MSH_CMD_EXPORT(rf_4068_start,rf_4068_start);
 uint8_t buf1[]={0x31,0x31,0x32,0x32,0x33,0x33,0x34,0x34,0x35,0x35,0x36,0x36,0x37,0x37};
 void sendtest1(void)
 {

@@ -11,6 +11,7 @@
 #include "stdint.h"
 #include "file.h"
 #include "flashwork.h"
+#include "finsh.h"
 
 #define DBG_TAG "file"
 #define DBG_LVL DBG_LOG
@@ -20,6 +21,11 @@ uint32_t Global_Nums=0;
 void ID_Init(void)
 {
     Global_Nums = Flash_Get_IDNums();
+    if(Flash_Get_Boot()==0)
+    {
+        Flash_Boot_Change(1);
+        delete_file_1();
+    }
     LOG_I("Init ID is %ld\r\n",Global_Nums);
 }
 uint32_t ID_Get(void)
@@ -50,11 +56,11 @@ uint8_t select_file(uint32_t num)
         return 1;
     }
 }
-void File_Output(void)
+void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button)
 {
     ID_Increase();//序列增加
     char *buf = rt_malloc(64);
-    sprintf(buf,"%d 0 %d 0 0 0 0 0 0\n",Global_Nums,Global_Nums%2);
+    sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,(freq>0)?433:4068,valve,psi,shake,send_num,rssi,first,button);
     if(select_file(Global_Nums)==0)
     {
         write_file_1(buf,strlen(buf));
@@ -66,12 +72,3 @@ void File_Output(void)
     LOG_D("%s\r\n",buf);
     rt_free(buf);
 }
-MSH_CMD_EXPORT(File_Output,File_Output);
-void ftest(void)
-{
-    for(uint32_t i=1;i<400000;i++)
-    {
-        File_Output();
-    }
-}
-MSH_CMD_EXPORT(ftest,ftest);
