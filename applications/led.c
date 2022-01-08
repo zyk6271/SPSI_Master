@@ -56,6 +56,7 @@ void led_Init(void)
     LED8_G = agile_led_create(LED8_G_Pin, PIN_LOW, "0,100,100", -1);
     LED8_R = agile_led_create(LED8_R_Pin, PIN_LOW, "0,300,500", -1);
     BEEP = agile_led_create(BUZZER, PIN_HIGH, "0,300,500", -1);
+    psi_led_init();
 }
 void rf_433_lost(void)
 {

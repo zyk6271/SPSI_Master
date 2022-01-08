@@ -19,5 +19,11 @@ void led_rf4068_stop(void);
 void beep_start(uint8_t select);
 void beep_stop(void);
 void beep_calc(uint8_t level_4068,uint8_t level_433);
+void transmitter_lost(void);
+void transmitter_off(void);
+void transmitter_on(void);
+void receiver_lost(void);
+void receiver_off(void);
+void receiver_on(void);
 
 #endif /* APPLICATIONS_LED_H_ */

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include "Pin_Config.h"
 #include "led.h"
+#include "psi.h"
 
 #define DBG_TAG "PSI"
 #define DBG_LVL DBG_LOG
@@ -54,5 +55,22 @@ void psi_led_lost(void)
         transmitter_lost();
         receiver_lost();
     }
+}
+rt_timer_t psi_timer = RT_NULL;
+void psi_timer_callback(void *parameter)
+{
+    //close valve
 
+}
+void psi_pin_callback(void *parameter)
+{
+    //open valve
+    rt_timer_start(psi_timer);
+}
+void psi_init(void)
+{
+    rt_pin_mode(AC, PIN_MODE_INPUT_PULLUP);
+    rt_pin_attach_irq(AC, PIN_IRQ_MODE_FALLING, psi_pin_callback, RT_NULL);
+    rt_pin_irq_enable(AC, PIN_IRQ_ENABLE);
+    rt_timer_create("psi_timer", psi_timer_callback, RT_NULL, 5000, RT_TIMER_FLAG_SOFT_TIMER|RT_TIMER_FLAG_ONE_SHOT);
 }

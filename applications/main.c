@@ -26,6 +26,7 @@ int main(void)
     RadioQueueInit();
     led_Init();
     button_init();
+    warn_thread_init();
     //heart_init();
     while (1)
     {

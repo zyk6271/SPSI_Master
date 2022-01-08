@@ -9,7 +9,7 @@
  */
 #ifndef APPLICATIONS_HEART_H_
 #define APPLICATIONS_HEART_H_
-
+#include "stdint.h"
 typedef struct
 {
     uint16_t freq;

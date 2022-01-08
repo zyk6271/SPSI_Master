@@ -9,66 +9,56 @@
  */
 #include "rtthread.h"
 #include "stdint.h"
+#include "string.h"
 #include "file.h"
 #include "flashwork.h"
 #include "finsh.h"
+#include "little.h"
 
 #define DBG_TAG "file"
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
 
 uint32_t Global_Nums=0;
+uint32_t Global_Pos=0;
+
+rt_mutex_t spsi_read_mutex = RT_NULL;
+
 void ID_Init(void)
 {
+    spsi_read_mutex = rt_mutex_create("spsi_read_mutex", RT_IPC_FLAG_PRIO);
     Global_Nums = Flash_Get_IDNums();
+    Global_Pos = Flash_Get_Pos();
     if(Flash_Get_Boot()==0)
     {
         Flash_Boot_Change(1);
-        delete_file_1();
+        Global_Pos = file_init();
     }
-    LOG_I("Init ID is %ld\r\n",Global_Nums);
-}
-uint32_t ID_Get(void)
-{
-    return Global_Nums;
-}
-void ID_Increase(void)
-{
-    Global_Nums ++;
-    Flash_IDNums_Change(Global_Nums);
-}
-uint8_t select_file(uint32_t num)
-{
-    if((num%400000)==0)
-    {
-        delete_file_1();
-    }
-    else if((num%400000)==200000)
-    {
-        delete_file_2();
-    }
-    if((num%400000)<200000)
-    {
-        return 0;
-    }
-    else
-    {
-        return 1;
-    }
+    LOG_I("Init ID is %d,Init Pos is %d,\r\n",Global_Nums,Global_Pos);
 }
 void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button)
 {
-    ID_Increase();//序列增加
+    rt_mutex_take(spsi_read_mutex, RT_WAITING_FOREVER);
     char *buf = rt_malloc(64);
-    sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,(freq>0)?433:4068,valve,psi,shake,send_num,rssi,first,button);
-    if(select_file(Global_Nums)==0)
+    Global_Nums ++;//序列增加
+    sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,freq,valve,psi,shake,send_num,rssi,first,button);
+    if(Global_Nums%200000==0)
     {
-        write_file_1(buf,strlen(buf));
+        Global_Pos = 54;
     }
-    else
-    {
-        write_file_2(buf,strlen(buf));
-    }
+    Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
+    Flash_IDNums_Change(Global_Nums);
+    Flash_Pos_Change(Global_Pos);
     LOG_D("%s\r\n",buf);
     rt_free(buf);
+    rt_mutex_release(spsi_read_mutex);
 }
+void spsiread(void)
+{
+    rt_device_t dev;
+    dev = rt_console_get_device();
+    rt_mutex_take(spsi_read_mutex, RT_WAITING_FOREVER);
+    rym_upload_file(dev, "/SPSI_log.csv");
+    rt_mutex_release(spsi_read_mutex);
+}
+MSH_CMD_EXPORT(spsiread,spsiread);
