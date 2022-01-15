@@ -38,7 +38,7 @@ struct rt_spi_device *rf_433_radio_spi_init(void)
     struct rt_spi_configuration cfg;
     cfg.data_width = 8;
     cfg.mode = RT_SPI_MASTER | RT_SPI_MODE_0 | RT_SPI_MSB; /* SPI Compatible: Mode 0. */
-    cfg.max_hz = 8 * 1000000;             /* max 10M */
+    cfg.max_hz = 2 * 100000;             /* max 200k */
 
     res = rt_spi_configure(radio_spi_device, &cfg);
 
@@ -75,7 +75,7 @@ struct rt_spi_device *rf_4068_radio_spi_init(void)
     struct rt_spi_configuration cfg;
     cfg.data_width = 8;
     cfg.mode = RT_SPI_MASTER | RT_SPI_MODE_0 | RT_SPI_MSB; /* SPI Compatible: Mode 0. */
-    cfg.max_hz = 8 * 1000000;             /* max 10M */
+    cfg.max_hz = 2 * 100000;             /* max 200k */
 
     res = rt_spi_configure(radio_spi_device, &cfg);
 

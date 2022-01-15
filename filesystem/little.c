@@ -75,45 +75,29 @@ int flash_Init(void)
     LOG_I("Storage Init Success\r\n");
     return RT_EOK;
 }
-void write_file_1(char *buf,uint32_t size)
+uint32_t write_csv(char *buf,uint32_t pos,uint32_t size)
 {
     static int fd;
-    fd = open("/1.txt", O_WRONLY | O_CREAT | O_APPEND);
+    static uint32_t pos_tmp;
+    fd = open("/SPSI_log.csv", O_WRONLY | O_CREAT);
     if (fd>= 0)
     {
-       write(fd, buf, size);
-       close(fd);
+        lseek(fd,pos,SEEK_SET);
+        write(fd, buf, size);
+        pos_tmp = ltell(fd);
+        close(fd);
     }
+    return pos_tmp;
 }
-void write_file_2(char *buf,uint32_t size)
+uint32_t file_init(void)
 {
-    static int fd;
-    fd = open("/2.txt", O_WRONLY | O_CREAT | O_APPEND);
-    if (fd>= 0)
-    {
-       write(fd, buf, size);
-       close(fd);
-    }
-}
-void delete_file_1(void)
-{
+    static uint32_t pos_tmp;
     char *buf = rt_malloc(64);
     sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
-    LOG_D("%s\r\n",buf);
-    unlink("/1.txt");
-    write_file_1(buf,strlen(buf));
-    LOG_I("txt 1 is delete/r/n");
+    unlink("/SPSI_log.csv");
+    pos_tmp = write_csv(buf,0,strlen(buf));
     rt_free(buf);
+    LOG_I("SPSI_log.csv is created");
+    return pos_tmp;
 }
-MSH_CMD_EXPORT(delete_file_1,delete_file_1);
-void delete_file_2(void)
-{
-    char *buf = rt_malloc(64);
-    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
-    LOG_D("%s\r\n",buf);
-    unlink("/2.txt");
-    LOG_I("txt 2 is delete/r/n");
-    write_file_2(buf,strlen(buf));
-    rt_free(buf);
-}
-MSH_CMD_EXPORT(delete_file_2,delete_file_2);
+MSH_CMD_EXPORT(file_init,file_init);

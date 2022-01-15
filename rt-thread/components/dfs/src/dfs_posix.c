@@ -254,6 +254,27 @@ off_t lseek(int fd, off_t offset, int whence)
 }
 RTM_EXPORT(lseek);
 
+off_t ltell(int fd)
+{
+    int result;
+    struct dfs_fd *d;
+
+    d = fd_get(fd);
+    if (d == NULL)
+    {
+        rt_set_errno(-EBADF);
+
+        return -1;
+    }
+    result = d->pos;
+
+    /* release the ref-count of fd */
+    fd_put(d);
+
+    return result;
+}
+RTM_EXPORT(ltell);
+
 #ifndef _WIN32 /* we can not implement these functions */
 /**
  * this function is a POSIX compliant version, which will rename old file name

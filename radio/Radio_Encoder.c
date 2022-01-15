@@ -41,8 +41,8 @@ typedef struct
     uint8_t Data[100];
 }Radio_Queue;
 
-Radio_Queue Queue_433={0};
-Radio_Queue Queue_4068={0};
+Radio_Queue Queue_433;
+Radio_Queue Queue_4068;
 
 void rf_433_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
 {
@@ -62,6 +62,31 @@ void rf_433_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
     Queue_433.Data[NumTemp] = value;
     Queue_433.TargetNum++;
     LOG_D("GatewayDataEnqueue Success\r\n");
+}
+void rf_433_Urgent_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
+{
+    uint8_t NumTemp = Queue_433.TargetNum;
+    if(NumTemp<100)
+    {
+        NumTemp ++;
+        LOG_D("Queue Num Increase,Value is %d\r\n",NumTemp);
+    }
+    else
+    {
+        LOG_E("Queue is Full,Value is %d\r\n",NumTemp);
+        return;
+    }
+    for(uint8_t i = NumTemp;i>Queue_433.NowNum;i--)
+    {
+        Queue_433.Taget_Id[i] = Queue_433.Taget_Id[i-1];
+        Queue_433.Command[i] = Queue_433.Command[i-1];
+        Queue_433.Data[i] = Queue_433.Data[i-1];
+    }
+    Queue_433.Taget_Id[1+Queue_433.NowNum] = target_id;
+    Queue_433.Command[1+Queue_433.NowNum] = control;
+    Queue_433.Data[1+Queue_433.NowNum] = value;
+    Queue_433.TargetNum++;
+    LOG_D("GatewayDataUrgentEnqueue Success\r\n");
 }
 void rf_433_send(uint32_t target_id,uint8_t control,uint8_t value)
 {
@@ -88,7 +113,7 @@ void rf_433_Dequeue(void *paramaeter)
             LOG_D("rf_433 Send With Now Num %d,Target Num is %d,Target_Id %ld,counter %d,command %d,data %d\r\n",Queue_433.NowNum,Queue_433.TargetNum,Queue_433.Taget_Id[Queue_433.NowNum],Queue_433.Counter[Queue_433.NowNum],Queue_433.Command[Queue_433.NowNum],Queue_433.Data[Queue_433.NowNum]);
             rt_thread_mdelay(100);
         }
-        rt_thread_mdelay(50);
+        rt_thread_mdelay(150);
     }
 }
 void rf_4068_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
@@ -109,6 +134,31 @@ void rf_4068_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
     Queue_4068.Data[NumTemp] = value;
     Queue_4068.TargetNum++;
     LOG_D("GatewayDataEnqueue Success\r\n");
+}
+void rf_4068_Urgent_Enqueue(uint32_t target_id,uint8_t control,uint8_t value)
+{
+    uint8_t NumTemp = Queue_4068.TargetNum;
+    if(NumTemp<100)
+    {
+        NumTemp ++;
+        LOG_D("Queue Num Increase,Value is %d\r\n",NumTemp);
+    }
+    else
+    {
+        LOG_E("Queue is Full,Value is %d\r\n",NumTemp);
+        return;
+    }
+    for(uint8_t i = NumTemp;i>Queue_4068.NowNum;i--)
+    {
+        Queue_4068.Taget_Id[i] = Queue_4068.Taget_Id[i-1];
+        Queue_4068.Command[i] = Queue_4068.Command[i-1];
+        Queue_4068.Data[i] = Queue_4068.Data[i-1];
+    }
+    Queue_4068.Taget_Id[1+Queue_4068.NowNum] = target_id;
+    Queue_4068.Command[1+Queue_4068.NowNum] = control;
+    Queue_4068.Data[1+Queue_4068.NowNum] = value;
+    Queue_4068.TargetNum++;
+    LOG_D("GatewayDataUrgentEnqueue Success\r\n");
 }
 void rf_4068_send(uint32_t target_id,uint8_t control,uint8_t value)
 {
@@ -135,7 +185,7 @@ void rf_4068_Dequeue(void *paramaeter)
             LOG_D("rf_4068 Send With Now Num %d,Target Num is %d,Target_Id %ld,counter %d,command %d,data %d\r\n",Queue_4068.NowNum,Queue_4068.TargetNum,Queue_4068.Taget_Id[Queue_4068.NowNum],Queue_4068.Counter[Queue_4068.NowNum],Queue_4068.Command[Queue_4068.NowNum],Queue_4068.Data[Queue_4068.NowNum]);
             rt_thread_mdelay(100);
         }
-        rt_thread_mdelay(50);
+        rt_thread_mdelay(150);
     }
 }
 void RadioQueueInit(void)
@@ -149,9 +199,10 @@ void RadioQueueInit(void)
 //    }
     Self_ID = Default_Self_ID;
     Target_ID = Default_Target_ID;
-    Radio_Queue433 = rt_thread_create("Radio_Queue433", rf_433_Dequeue, RT_NULL, 1024, 10, 10);
+    LOG_W("Master now,Self_ID %ld,Target_ID %ld\r\n",Self_ID,Target_ID);
+    Radio_Queue433 = rt_thread_create("Radio_Queue433", rf_433_Dequeue, RT_NULL, 1024, 9, 10);
     if(Radio_Queue433)rt_thread_startup(Radio_Queue433);
-    Radio_Queue4068 = rt_thread_create("Radio_Queue4068", rf_4068_Dequeue, RT_NULL, 1024, 10, 10);
+    Radio_Queue4068 = rt_thread_create("Radio_Queue4068", rf_4068_Dequeue, RT_NULL, 1024, 9, 10);
     if(Radio_Queue4068)rt_thread_startup(Radio_Queue4068);
 }
 MSH_CMD_EXPORT(RadioQueueInit,RadioQueueInit);
