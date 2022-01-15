@@ -15,6 +15,11 @@
   "name": "LITTLEFS"
  }, 
  {
+  "path": "/packages/system/syswatch", 
+  "ver": "latest", 
+  "name": "SYSWATCH"
+ }, 
+ {
   "path": "/packages/peripherals/agile_button", 
   "ver": "latest", 
   "name": "AGILE_BUTTON"

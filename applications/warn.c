@@ -9,13 +9,15 @@
  */
 #include "rtthread.h"
 #include "heart.h"
+#include "psi.h"
+#include "led.h"
 
 rt_thread_t warn_t = RT_NULL;
 
 extern rf_info info_433;
 extern rf_info info_4068;
 
-uint8_t warning_status,warning_status_past;
+uint8_t warning_status,warning_status_past=3;
 
 void warn_callback(void *parameter)
 {
@@ -43,7 +45,6 @@ void warn_callback(void *parameter)
             {
             case 0:
                 beep_stop();
-                beep_calc(info_4068.rssi_level,info_433.rssi_level);
                 psi_led_resume();
                 break;
             case 1:
@@ -51,7 +52,7 @@ void warn_callback(void *parameter)
                 {
                     led_rf4068_start(1);
                 }
-                beep_start(1);
+                beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
                 psi_led_resume();
                 break;
             case 2:
@@ -59,11 +60,11 @@ void warn_callback(void *parameter)
                 {
                     led_rf433_start(1);
                 }
-                beep_start(1);
+                beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
                 psi_led_resume();
                 break;
             case 3:
-                if(!warning_status_past)
+                if(warning_status_past==0)
                 {
                     led_rf433_start(1);
                     led_rf4068_start(1);
@@ -76,7 +77,7 @@ void warn_callback(void *parameter)
                 {
                     led_rf4068_start(1);
                 }
-                beep_start(2);
+                beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
                 psi_led_lost();
                 break;
             }
@@ -87,7 +88,7 @@ void warn_callback(void *parameter)
 }
 void warn_thread_init(void)
 {
-    warn_t = rt_thread_create("warn", warn_callback, RT_NULL, 1024, 10, 10);
+    warn_t = rt_thread_create("warn", warn_callback, RT_NULL, 1024, 12, 10);
     if(warn_t != RT_NULL)
     {
         rt_thread_startup(warn_t);

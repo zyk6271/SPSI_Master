@@ -24,16 +24,18 @@ void test_single_callback(agile_btn_t *btn)
 }
 void test_hold_callback(agile_btn_t *btn)
 {
-    ef_env_set_default();
-    rt_thread_mdelay(200);
+    Flash_Boot_Change(0);
+    beep_start(4);
+    rt_thread_mdelay(3000);
     reboot();
     LOG_I("heart hold\r\n");
 }
 void button_init(void)
 {
     test_btn = agile_btn_create(SW1, PIN_LOW, PIN_MODE_INPUT_PULLUP);
-    agile_btn_set_elimination_time(test_btn,100);
-    agile_btn_set_event_cb(test_btn, BTN_PRESS_UP_EVENT, test_single_callback);
+    agile_btn_set_elimination_time(test_btn,50);
+    agile_btn_set_hold_cycle_time(test_btn,3000);
+    agile_btn_set_event_cb(test_btn, BTN_CLICK_EVENT, test_single_callback);
     agile_btn_set_event_cb(test_btn, BTN_HOLD_EVENT, test_hold_callback);
     agile_btn_start(test_btn);
 }

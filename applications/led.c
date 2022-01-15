@@ -17,6 +17,8 @@
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
 
+uint8_t beep_mode;
+
 static agile_led_t *LED1_G = RT_NULL;
 static agile_led_t *LED1_R = RT_NULL;
 static agile_led_t *LED2_G = RT_NULL;
@@ -39,30 +41,33 @@ static agile_led_t *BEEP = RT_NULL;
 */
 void led_Init(void)
 {
-    LED1_G = agile_led_create(LED1_G_Pin, PIN_LOW, "3000,300,500", -1);
-    LED1_R = agile_led_create(LED1_R_Pin, PIN_LOW, "0,300,500", -1);
-    LED2_G = agile_led_create(LED2_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED2_R = agile_led_create(LED2_R_Pin, PIN_LOW, "0,100,100", -1);
-    LED3_G = agile_led_create(LED3_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED3_R = agile_led_create(LED3_R_Pin, PIN_LOW, "0,100,100", -1);
-    LED4_G = agile_led_create(LED4_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED4_R = agile_led_create(LED4_R_Pin, PIN_LOW, "0,100,100", -1);
-    LED5_G = agile_led_create(LED5_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED5_R = agile_led_create(LED5_R_Pin, PIN_LOW, "0,100,100", -1);
-    LED6_G = agile_led_create(LED6_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED6_R = agile_led_create(LED6_R_Pin, PIN_LOW, "0,100,100", -1);
-    LED7_G = agile_led_create(LED7_G_Pin, PIN_LOW, "3000,300,500", -1);
-    LED7_R = agile_led_create(LED7_R_Pin, PIN_LOW, "3000,300,500", -1);
-    LED8_G = agile_led_create(LED8_G_Pin, PIN_LOW, "0,100,100", -1);
-    LED8_R = agile_led_create(LED8_R_Pin, PIN_LOW, "0,300,500", -1);
-    BEEP = agile_led_create(BUZZER, PIN_HIGH, "0,300,500", -1);
+    LED1_G = agile_led_create(LED1_G_Pin, PIN_LOW, "100,300,500", 1);
+    LED1_R = agile_led_create(LED1_R_Pin, PIN_LOW, "100,300,500", 1);
+    LED2_G = agile_led_create(LED2_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED2_R = agile_led_create(LED2_R_Pin, PIN_LOW, "100,100,100", 1);
+    LED3_G = agile_led_create(LED3_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED3_R = agile_led_create(LED3_R_Pin, PIN_LOW, "100,100,100", 1);
+    LED4_G = agile_led_create(LED4_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED4_R = agile_led_create(LED4_R_Pin, PIN_LOW, "100,100,100", 1);
+    LED5_G = agile_led_create(LED5_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED5_R = agile_led_create(LED5_R_Pin, PIN_LOW, "100,100,100", 1);
+    LED6_G = agile_led_create(LED6_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED6_R = agile_led_create(LED6_R_Pin, PIN_LOW, "100,100,100", 1);
+    LED7_G = agile_led_create(LED7_G_Pin, PIN_LOW, "100,300,500", 1);
+    LED7_R = agile_led_create(LED7_R_Pin, PIN_LOW, "100,300,500", 1);
+    LED8_G = agile_led_create(LED8_G_Pin, PIN_LOW, "100,100,100", 1);
+    LED8_R = agile_led_create(LED8_R_Pin, PIN_LOW, "100,300,500", 1);
+    BEEP = agile_led_create(BUZZER, PIN_HIGH, "100,300,500", 1);
     psi_led_init();
 }
 void rf_433_lost(void)
 {
-    agile_led_set_light_mode(LED1_R,"300,100",1);
-    agile_led_set_light_mode(LED2_R,"300,100",1);
-    agile_led_set_light_mode(LED3_R,"300,100",1);
+    agile_led_set_light_mode(LED1_R,"300,150",1);
+    agile_led_set_light_mode(LED2_R,"300,150",1);
+    agile_led_set_light_mode(LED3_R,"300,150",1);
+    agile_led_stop(LED1_G);
+    agile_led_stop(LED2_G);
+    agile_led_stop(LED3_G);
     agile_led_off(LED1_G);
     agile_led_off(LED2_G);
     agile_led_off(LED3_G);
@@ -72,8 +77,12 @@ void rf_433_lost(void)
 }
 void rf_433_ultralow(void)
 {
-    agile_led_set_light_mode(LED1_R,"300,100",1);
-    agile_led_set_light_mode(LED1_G,"300,100",1);
+    agile_led_set_light_mode(LED1_R,"300,150",1);
+    agile_led_set_light_mode(LED1_G,"300,150",1);
+    agile_led_stop(LED2_R);
+    agile_led_stop(LED2_G);
+    agile_led_stop(LED3_R);
+    agile_led_stop(LED3_G);
     agile_led_off(LED2_R);
     agile_led_off(LED2_G);
     agile_led_off(LED3_R);
@@ -83,7 +92,12 @@ void rf_433_ultralow(void)
 }
 void rf_433_low(void)
 {
-    agile_led_set_light_mode(LED1_G,"300,100",1);
+    agile_led_set_light_mode(LED1_G,"300,150",1);
+    agile_led_stop(LED1_R);
+    agile_led_stop(LED2_R);
+    agile_led_stop(LED2_G);
+    agile_led_stop(LED3_R);
+    agile_led_stop(LED3_G);
     agile_led_off(LED1_R);
     agile_led_off(LED2_R);
     agile_led_off(LED2_G);
@@ -93,8 +107,12 @@ void rf_433_low(void)
 }
 void rf_433_mid(void)
 {
-    agile_led_set_light_mode(LED1_G,"300,100",1);
-    agile_led_set_light_mode(LED2_G,"300,100",1);
+    agile_led_set_light_mode(LED1_G,"300,150",1);
+    agile_led_set_light_mode(LED2_G,"300,150",1);
+    agile_led_stop(LED1_R);
+    agile_led_stop(LED2_R);
+    agile_led_stop(LED3_R);
+    agile_led_stop(LED3_G);
     agile_led_off(LED1_R);
     agile_led_off(LED2_R);
     agile_led_off(LED3_R);
@@ -104,9 +122,12 @@ void rf_433_mid(void)
 }
 void rf_433_high(void)
 {
-    agile_led_set_light_mode(LED1_G,"300,100",1);
-    agile_led_set_light_mode(LED2_G,"300,100",1);
-    agile_led_set_light_mode(LED3_G,"300,100",1);
+    agile_led_set_light_mode(LED1_G,"300,150",1);
+    agile_led_set_light_mode(LED2_G,"300,150",1);
+    agile_led_set_light_mode(LED3_G,"300,150",1);
+    agile_led_stop(LED1_R);
+    agile_led_stop(LED2_R);
+    agile_led_stop(LED3_R);
     agile_led_off(LED1_R);
     agile_led_off(LED2_R);
     agile_led_off(LED3_R);
@@ -146,9 +167,12 @@ void led_rf433_stop(void)
 }
 void rf_4068_lost(void)
 {
-    agile_led_set_light_mode(LED4_R,"300,100",1);
-    agile_led_set_light_mode(LED5_R,"300,100",1);
-    agile_led_set_light_mode(LED6_R,"300,100",1);
+    agile_led_set_light_mode(LED4_R,"300,150",1);
+    agile_led_set_light_mode(LED5_R,"300,150",1);
+    agile_led_set_light_mode(LED6_R,"300,150",1);
+    agile_led_stop(LED4_G);
+    agile_led_stop(LED5_G);
+    agile_led_stop(LED6_G);
     agile_led_off(LED4_G);
     agile_led_off(LED5_G);
     agile_led_off(LED6_G);
@@ -158,8 +182,12 @@ void rf_4068_lost(void)
 }
 void rf_4068_ultralow(void)
 {
-    agile_led_set_light_mode(LED4_R,"300,100",1);
-    agile_led_set_light_mode(LED4_G,"300,100",1);
+    agile_led_set_light_mode(LED4_R,"300,150",1);
+    agile_led_set_light_mode(LED4_G,"300,150",1);
+    agile_led_stop(LED5_R);
+    agile_led_stop(LED5_G);
+    agile_led_stop(LED6_R);
+    agile_led_stop(LED6_G);
     agile_led_off(LED5_R);
     agile_led_off(LED5_G);
     agile_led_off(LED6_R);
@@ -169,7 +197,12 @@ void rf_4068_ultralow(void)
 }
 void rf_4068_low(void)
 {
-    agile_led_set_light_mode(LED4_G,"300,100",1);
+    agile_led_set_light_mode(LED4_G,"300,150",1);
+    agile_led_stop(LED4_R);
+    agile_led_stop(LED5_R);
+    agile_led_stop(LED5_G);
+    agile_led_stop(LED6_R);
+    agile_led_stop(LED6_G);
     agile_led_off(LED4_R);
     agile_led_off(LED5_R);
     agile_led_off(LED5_G);
@@ -179,8 +212,12 @@ void rf_4068_low(void)
 }
 void rf_4068_mid(void)
 {
-    agile_led_set_light_mode(LED4_G,"300,100",1);
-    agile_led_set_light_mode(LED5_G,"300,100",1);
+    agile_led_set_light_mode(LED4_G,"300,150",1);
+    agile_led_set_light_mode(LED5_G,"300,150",1);
+    agile_led_stop(LED4_R);
+    agile_led_stop(LED5_R);
+    agile_led_stop(LED6_R);
+    agile_led_stop(LED6_G);
     agile_led_off(LED4_R);
     agile_led_off(LED5_R);
     agile_led_off(LED6_R);
@@ -190,9 +227,12 @@ void rf_4068_mid(void)
 }
 void rf_4068_high(void)
 {
-    agile_led_set_light_mode(LED4_G,"300,100",1);
-    agile_led_set_light_mode(LED5_G,"300,100",1);
-    agile_led_set_light_mode(LED6_G,"300,100",1);
+    agile_led_set_light_mode(LED4_G,"300,150",1);
+    agile_led_set_light_mode(LED5_G,"300,150",1);
+    agile_led_set_light_mode(LED6_G,"300,150",1);
+    agile_led_stop(LED4_R);
+    agile_led_stop(LED5_R);
+    agile_led_stop(LED6_R);
     agile_led_off(LED4_R);
     agile_led_off(LED5_R);
     agile_led_off(LED6_R);
@@ -230,12 +270,42 @@ void led_rf4068_stop(void)
     agile_led_off(LED6_R);
     agile_led_off(LED6_G);
 }
-void beep_calc(uint8_t level_4068,uint8_t level_433)
+void beep_calc(uint8_t level_4068,uint8_t level_433,uint8_t alive_4068,uint8_t alive_433)
 {
-    if(level_4068 == 1 || level_433 == 1)
+    uint8_t mode_temp;
+    if(alive_4068==0 || alive_433==0)
     {
-        beep_start(0);
+        if(alive_4068==0 && alive_433==0)
+        {
+            mode_temp = 3;
+        }
+        else
+        {
+            mode_temp = 2;
+        }
+        if(mode_temp!=beep_mode)
+        {
+            beep_mode = mode_temp;
+            beep_start(mode_temp);
+        }
+        return;
     }
+    else if(level_4068 == 2 || level_433 == 2)
+    {
+        mode_temp = 1;
+        if(mode_temp!=beep_mode)
+        {
+            beep_mode = mode_temp;
+            beep_start(mode_temp);
+        }
+        return;
+    }
+    else if(level_4068 > 2 && level_433 > 2)
+    {
+        beep_mode = 0;
+        beep_stop();
+    }
+
 }
 void transmitter_lost(void)
 {
@@ -262,6 +332,31 @@ void receiver_lost(void)
     agile_led_off(LED8_G);
     agile_led_start(LED8_R);
 }
+void receiver_close(void)
+{
+    agile_led_stop(LED8_G);
+    agile_led_stop(LED8_R);
+    agile_led_off(LED8_G);
+    agile_led_off(LED8_R);
+}
+void receiver_blink(uint8_t valve)
+{
+    if(valve)
+    {
+        agile_led_set_light_mode(LED8_G,"100,100,100,100",4);
+        agile_led_off(LED8_G);
+        agile_led_start(LED8_G);
+    }
+    else
+    {
+        agile_led_set_light_mode(LED8_R,"100,100,100,100",4);
+        agile_led_set_light_mode(LED8_G,"100,100,100,100",4);
+        agile_led_off(LED8_R);
+        agile_led_off(LED8_G);
+        agile_led_start(LED8_R);
+        agile_led_start(LED8_G);
+    }
+}
 void receiver_off(void)
 {
     agile_led_set_light_mode(LED8_R,"300,100",1);
@@ -281,14 +376,17 @@ void beep_start(uint8_t select)
     agile_led_off(BEEP);
     switch(select)
     {
-    case 0://10s/1声
+    case 1://10s/1声
         agile_led_set_light_mode(BEEP,"300,200,10000",-1);
         break;
-    case 1://5s/2声
+    case 2://5s/2声
         agile_led_set_light_mode(BEEP,"300,200,200,200,5000",-1);
         break;
-    case 2://5s/3声
+    case 3://5s/3声
         agile_led_set_light_mode(BEEP,"300,200,200,200,200,200,5000",-1);
+        break;
+    case 4://5s/5声
+        agile_led_set_light_mode(BEEP,"300,200,200,200,200,200,200,200,200,200,200",1);
         break;
     }
     agile_led_start(BEEP);

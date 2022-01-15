@@ -12,6 +12,10 @@
 #include "little.h"
 #include "file.h"
 #include "Radio_Encoder.h"
+#include "seg.h"
+#include "psi.h"
+#include "led.h"
+#include "flashwork.h"
 
 #define DBG_TAG "main"
 #define DBG_LVL DBG_LOG
@@ -23,11 +27,13 @@ int main(void)
     ID_Init();
     rf_433_start();
     rf_4068_start();
-    RadioQueueInit();
     led_Init();
-    button_init();
     warn_thread_init();
-    //heart_init();
+    heart_init();
+    button_init();
+    psi_init();
+    RadioQueueInit();
+    seg_init();
     while (1)
     {
         rt_thread_mdelay(1000);

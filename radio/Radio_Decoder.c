@@ -20,6 +20,7 @@
 #include "Radio_Drv.h"
 #include "heart.h"
 #include "led.h"
+#include "seg.h"
 
 #define DBG_TAG "RF_DE"
 #define DBG_LVL DBG_LOG
@@ -31,78 +32,138 @@ extern uint32_t Target_ID;
 extern rf_info info_433;
 extern rf_info info_4068;
 
-uint8_t rssi_level_select(int rssi)
+extern uint8_t PSI_Status;
+
+uint8_t rf4068_rssi_level_select(int rssi)
 {
     uint8_t value;
     if(rssi > -68)
     {
         value = 5;
+        rf4068_rssi_count_resume();
+        rf4068_alive_count_resume();
     }
     else if(rssi <= -68 && rssi > -81)
     {
         value = 4;
+        rf4068_rssi_count_resume();
+        rf4068_alive_count_resume();
     }
     else if(rssi <= -81 && rssi > -90)
     {
         value = 3;
+        rf4068_rssi_count_resume();
+        rf4068_alive_count_resume();
     }
     else if(rssi <= -90 && rssi > -95)
     {
         value = 2;
+        rf4068_rssi_count_increase();
+        rf4068_alive_count_resume();
     }
-    else if(rssi <= -95)
+    return value;
+}
+uint8_t rf433_rssi_level_select(int rssi)
+{
+    uint8_t value;
+    if(rssi > -68)
     {
-        value = 1;
+        value = 5;
+        rf433_rssi_count_resume();
+        rf433_alive_count_resume();
+    }
+    else if(rssi <= -68 && rssi > -81)
+    {
+        value = 4;
+        rf433_rssi_count_resume();
+        rf433_alive_count_resume();
+    }
+    else if(rssi <= -81 && rssi > -90)
+    {
+        value = 3;
+        rf433_rssi_count_resume();
+        rf433_alive_count_resume();
+    }
+    else if(rssi <= -90 && rssi > -95)
+    {
+        value = 2;
+        rf433_rssi_count_increase();
+        rf433_alive_count_resume();
     }
     return value;
 }
 void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
 {
     Message Rx_message;
-    if(rx_buffer[rx_len-1]=='S')
+    if(rx_buffer[rx_len-1]=='S' && rssi>-95)
      {
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)
          {
+             info_433.received = 1;
+             info_433.rssi = rssi;
+             info_433.rssi_level = rf433_rssi_level_select(rssi);
+             beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
              switch(Rx_message.Command)
              {
              case 0://心跳
-                 info_433.received = 1;
-                 info_433.rssi = rssi;
-                 info_433.rssi_level = rssi_level_select(rssi);
                  LOG_I("RF 433 heart is received\r\n");
-                 led_rf433_start(info_433.rssi_level);
+                 valve_control(Rx_message.Data);
                  break;
-             case 1://手动测试
-
-                 //打开关闭PSI
+             case 1://按钮
+                 info_433.testreceived = 1;
+                 LOG_I("RF 433 heart is received\r\n");
+                 receiver_blink(Rx_message.Data);
+                 valve_control(Rx_message.Data);
+                 break;
+                 break;
+             case 2://手动测试
+                 LOG_I("RF 433 PSI Control is received\r\n");
+                 valve_control(Rx_message.Data);
+                 break;
+             case 3://回复子机应答
+                 LOG_I("RF 433 PSI Slave is received\r\n");
+                 rf_433_Enqueue(Rx_message.From_ID, 3, PSI_Status);
                  break;
              }
+             led_rf433_start(info_433.rssi_level);
          }
      }
 }
 void Solve_4068(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
 {
     Message Rx_message;
-    if(rx_buffer[rx_len-1]=='S')
+    if(rx_buffer[rx_len-1]=='S' && rssi>-95)
      {
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)
          {
+             info_4068.received = 1;
+             info_4068.rssi = rssi;
+             info_4068.rssi_level = rf4068_rssi_level_select(rssi);
+             beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
              switch(Rx_message.Command)
              {
              case 0://心跳
-                 info_4068.received = 1;
-                 info_4068.rssi = rssi;
-                 info_4068.rssi_level = rssi_level_select(rssi);
                  LOG_I("RF 4068 heart is received\r\n");
-                 led_rf4068_start(info_4068.rssi_level);
+                 valve_control(Rx_message.Data);
                  break;
-             case 1://手动测试
-
-                 //打开关闭PSI
+             case 1://按钮
+                 info_4068.testreceived = 1;
+                 LOG_I("RF 4068 heart is received\r\n");
+                 receiver_blink(Rx_message.Data);
+                 valve_control(Rx_message.Data);
+                 break;
+             case 2://手动测试
+                 LOG_I("RF 4068 PSI Control is received\r\n");
+                 valve_control(Rx_message.Data);
+                 break;
+             case 3://回复子机应答
+                 LOG_I("RF 4068 PSI Slave is received\r\n");
+                 rf_4068_Enqueue(Rx_message.From_ID,3,PSI_Status);
                  break;
              }
+             led_rf4068_start(info_4068.rssi_level);
          }
      }
 }

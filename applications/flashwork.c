@@ -11,7 +11,7 @@
 #include "easyflash.h"
 
 #define DBG_TAG "flashwork"
-#define DBG_LVL DBG_LOG
+#define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
 char read_value_temp[64]={0};
