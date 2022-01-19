@@ -22,6 +22,7 @@ typedef struct
     uint8_t testreceived;
     int rssi;
     uint8_t rssi_level;
+    uint8_t startup;
 }rf_info;
 
 void heart_warning(void);

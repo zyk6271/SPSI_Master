@@ -20,9 +20,12 @@
 
 rt_thread_t seg_t = RT_NULL;
 
-uint8_t rf4068_rssi_count,rf4068_alive_conut;
-uint8_t rf433_rssi_count,rf433_alive_conut;
-uint8_t seg1_level,seg2_level;
+uint8_t rf4068_rssi_count=0;
+uint8_t rf4068_alive_conut=0;
+uint8_t rf433_rssi_count=0;
+uint8_t rf433_alive_conut=0;
+uint8_t seg1_level=0;
+uint8_t seg2_level=0;
 
 void rf4068_rssi_count_increase(void)
 {
@@ -31,6 +34,7 @@ void rf4068_rssi_count_increase(void)
         rf4068_rssi_count++;
     }
 }
+MSH_CMD_EXPORT(rf4068_rssi_count_increase,rf4068_rssi_count_increase);
 void rf4068_rssi_count_resume(void)
 {
     rf4068_rssi_count = 0;
@@ -41,10 +45,10 @@ void rf4068_alive_count_increase(void)
     {
         rf4068_alive_conut++;
     }
+    rf4068_rssi_count = 0;
 }
 void rf4068_alive_count_resume(void)
 {
-    rf4068_rssi_count = 0;
     rf4068_alive_conut = 0;
 }
 void rf433_rssi_count_increase(void)
@@ -54,6 +58,7 @@ void rf433_rssi_count_increase(void)
         rf433_rssi_count++;
     }
 }
+MSH_CMD_EXPORT(rf4068_alive_count_increase,rf4068_alive_count_increase);
 void rf433_rssi_count_resume(void)
 {
     rf433_rssi_count = 0;
@@ -64,10 +69,10 @@ void rf433_alive_count_increase(void)
     {
         rf433_alive_conut++;
     }
+    rf433_rssi_count = 0;
 }
 void rf433_alive_count_resume(void)
 {
-    rf433_rssi_count = 0;
     rf433_alive_conut = 0;
 }
 void alive_count_increase(uint8_t select)

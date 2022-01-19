@@ -21,6 +21,7 @@
 #include "heart.h"
 #include "led.h"
 #include "seg.h"
+#include "warn.h"
 
 #define DBG_TAG "RF_DE"
 #define DBG_LVL DBG_LOG
@@ -33,6 +34,8 @@ extern rf_info info_433;
 extern rf_info info_4068;
 
 extern uint8_t PSI_Status;
+
+extern struct rt_event rf_event;
 
 uint8_t rf4068_rssi_level_select(int rssi)
 {
@@ -100,10 +103,10 @@ void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)
          {
+             rt_event_send(&rf_event, RF433_Online);
              info_433.received = 1;
              info_433.rssi = rssi;
              info_433.rssi_level = rf433_rssi_level_select(rssi);
-             beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
              switch(Rx_message.Command)
              {
              case 0://心跳
@@ -120,6 +123,7 @@ void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
              case 2://手动测试
                  LOG_I("RF 433 PSI Control is received\r\n");
                  valve_control(Rx_message.Data);
+                 rf_write(1,rssi);
                  break;
              case 3://回复子机应答
                  LOG_I("RF 433 PSI Slave is received\r\n");
@@ -138,10 +142,10 @@ void Solve_4068(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)
          {
+             rt_event_send(&rf_event, RF4068_Online);
              info_4068.received = 1;
              info_4068.rssi = rssi;
              info_4068.rssi_level = rf4068_rssi_level_select(rssi);
-             beep_calc(info_4068.rssi_level,info_433.rssi_level,info_4068.alive,info_433.alive);
              switch(Rx_message.Command)
              {
              case 0://心跳
@@ -157,6 +161,7 @@ void Solve_4068(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
              case 2://手动测试
                  LOG_I("RF 4068 PSI Control is received\r\n");
                  valve_control(Rx_message.Data);
+                 rf_write(0,rssi);
                  break;
              case 3://回复子机应答
                  LOG_I("RF 4068 PSI Slave is received\r\n");

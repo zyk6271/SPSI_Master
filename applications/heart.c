@@ -17,10 +17,16 @@
 #include "led.h"
 #include "psi.h"
 #include "seg.h"
+#include "warn.h"
 
 #define DBG_TAG "heart"
 #define DBG_LVL DBG_LOG
 #include <rtdbg.h>
+
+#define send 0
+#define check 1
+#define randtime_7 2
+#define randtime_8 3
 
 rt_thread_t heart_t = RT_NULL;
 rt_thread_t buttontest_t = RT_NULL;
@@ -32,13 +38,18 @@ rt_sem_t connect_sem = RT_NULL;
 rt_sem_t heart_sem = RT_NULL;
 rt_sem_t button_sem = RT_NULL;
 
-rf_info info_433={433,0,1,0,0,0,0};
-rf_info info_4068={4068,0,1,0,0,0,0};
+rf_info info_433;
+rf_info info_4068;
 
 uint8_t rf_now ;
 
 extern uint32_t Target_ID ;
 extern uint8_t PSI_Status,Valve_Status;
+extern struct rt_event rf_event;
+
+uint8_t heart_mode;
+uint32_t rand_time;
+uint32_t remain_time;
 
 void heart_request(uint8_t rf_select)
 {
@@ -77,8 +88,11 @@ void heart_single(void)
 MSH_CMD_EXPORT(heart_single,heart_single);
 void psi_upload(uint8_t value)
 {
-    rf_433_Enqueue(Target_ID,2,value);
-    rf_4068_Enqueue(Target_ID,2,value);
+    if(info_4068.alive==1 || info_433.alive==1 )
+    {
+        rf_433_Enqueue(Target_ID,2,value);
+        rf_4068_Enqueue(Target_ID,2,value);
+    }
 }
 void connect_timer_callback(void *parameter)
 {
@@ -89,6 +103,14 @@ void heart_time_start(uint32_t time)
     rt_timer_control(heart_timer, RT_TIMER_CTRL_SET_TIME, &time);
     rt_timer_start(heart_timer);
 }
+void heart_time_increase(uint32_t time)
+{
+    uint32_t temp;
+    rt_timer_control(heart_timer, RT_TIMER_CTRL_GET_TIME, &temp);
+    temp +=time;
+    rt_timer_control(heart_timer, RT_TIMER_CTRL_SET_TIME, &temp);
+    rt_timer_start(heart_timer);
+}
 void heart_timer_callback(void *parameter)
 {
     rt_sem_release(heart_sem);
@@ -97,6 +119,7 @@ void radio_refresh(rf_info *temp)
 {
     temp->retry = 0;
     temp->alive = 1;
+    temp->startup = 1;
     rf_now = !rf_now;
 }
 uint32_t get_srand_time(uint32_t min,uint32_t max)
@@ -113,9 +136,39 @@ void rf_offline(rf_info *temp)
     if(temp->alive)
     {
         temp->alive=0;
-        LOG_I("rf %d is offline\r\n",temp->freq);
+        if(temp->freq == 433)
+        {
+            rt_event_send(&rf_event, RF433_Offline);
+        }
+        else
+        {
+            rt_event_send(&rf_event, RF4068_Offline);
+        }
+    }
+    else if(temp->startup==0)
+    {
+        temp->startup = 1;
+        if(temp->freq == 433)
+        {
+            rt_event_send(&rf_event, RF433_Offline);
+        }
+        else
+        {
+            rt_event_send(&rf_event, RF4068_Offline);
+        }
+    }
+    LOG_I("rf %d is offline\r\n",temp->freq);
+}
+void rf_write(uint8_t rf_select,int rssi)
+{
+    if(rf_select){
+        File_Output(1,Valve_Status,PSI_Status,1,info_433.retry,rssi,1,0);
+    }
+    else {
+        File_Output(0,Valve_Status,PSI_Status,1,info_4068.retry,rssi,1,0);
     }
 }
+rt_mutex_t rf_lock = RT_NULL;
 void buttontest_callback(void *parameter)
 {
     rf_info *info_temp = rt_malloc(sizeof(rf_info));
@@ -141,12 +194,18 @@ void buttontest_callback(void *parameter)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,0,info_temp->rssi,1,1);
                     LOG_I("radio_%d first heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
+                    info_temp->retry = 0;
+                    info_temp->alive = 1;
+                    info_temp->startup = 1;
+                    if(rt_mutex_trytake(rf_lock)==RT_EOK)
+                    {
+                        rf_now = !rf_now;
+                        rt_mutex_release(rf_lock);
+                    }
                 }
                 else
                 {
                     LOG_W("radio_%d first heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
                     info_temp->retry++;
                 }
                 break;
@@ -156,12 +215,18 @@ void buttontest_callback(void *parameter)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,1,info_temp->rssi,1,1);
                     LOG_I("radio_%d second heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
+                    info_temp->retry = 0;
+                    info_temp->alive = 1;
+                    info_temp->startup = 1;
+                    if(rt_mutex_trytake(rf_lock)==RT_EOK)
+                    {
+                        rf_now = !rf_now;
+                        rt_mutex_release(rf_lock);
+                    }
                 }
                 else
                 {
                     LOG_W("radio_%d second heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
                     info_temp->retry++;
                 }
                 break;
@@ -171,12 +236,18 @@ void buttontest_callback(void *parameter)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,2,info_temp->rssi,1,1);
                     LOG_I("radio_%d third heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
+                    info_temp->retry = 0;
+                    info_temp->alive = 1;
+                    info_temp->startup = 1;
+                    if(rt_mutex_trytake(rf_lock)==RT_EOK)
+                    {
+                        rf_now = !rf_now;
+                        rt_mutex_release(rf_lock);
+                    }
                 }
                 else
                 {
                     LOG_W("radio_%d third heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
                     info_temp->retry++;
                 }
                 break;
@@ -186,13 +257,24 @@ void buttontest_callback(void *parameter)
                 if(info_temp->testreceived)
                 {
                     LOG_I("radio_%d final heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
+                    info_temp->retry = 0;
+                    info_temp->alive = 1;
+                    info_temp->startup = 1;
+                    if(rt_mutex_trytake(rf_lock)==RT_EOK)
+                    {
+                        rf_now = !rf_now;
+                        rt_mutex_release(rf_lock);
+                    }
                 }
                 else
                 {
                     LOG_W("radio_%d final heart fail\r\n",info_temp->freq);
                     alive_count_increase(rf_now);
-                    rf_now = !rf_now;
+                    if(rt_mutex_trytake(rf_lock)==RT_EOK)
+                    {
+                        rf_now = !rf_now;
+                        rt_mutex_release(rf_lock);
+                    }
                     rf_offline(info_temp);
                     info_temp->retry = 0;
                 }
@@ -215,8 +297,9 @@ void heart_callback(void *parameter)
                 LOG_I("rf_connected success\r\n");
                 File_Output(1,Valve_Status,PSI_Status,info_433.received,info_433.retry,info_433.rssi,0,0);
                 rt_timer_stop(connect_timer);
-                radio_refresh(info_temp);
+                radio_refresh(&info_433);
                 heart_time_start(10000);
+                heart_mode = send;
             }
             else
             {
@@ -225,86 +308,107 @@ void heart_callback(void *parameter)
         }
         if(rt_sem_take(heart_sem,100) == RT_EOK)
         {
-            if(rf_now)
+            switch(heart_mode)
             {
-                info_temp = &info_433;
-            }
-            else
-            {
-                info_temp = &info_4068;
-            }
-            heart_request(rf_now);
-            switch(info_temp->retry)
-            {
-            case 0:
-                rt_thread_mdelay(1000);
-                if(info_temp->received)
+            case send://发送
+                if(rf_now)
                 {
-                    File_Output(rf_now,Valve_Status,PSI_Status,1,0,info_temp->rssi,1,0);
-                    LOG_I("radio_%d first heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
-                    heart_time_start(30000);
+                    info_temp = &info_433;
                 }
                 else
                 {
-                    LOG_W("radio_%d first heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
-                    info_temp->retry++;
-                    heart_time_start(get_srand_time(0,7));
+                    info_temp = &info_4068;
                 }
+                heart_request(rf_now);
+                heart_time_start(1000);
+                heart_mode = check;
+                rt_mutex_trytake(rf_lock);
                 break;
-            case 1:
-                rt_thread_mdelay(1000);
-                if(info_temp->received)
+            case 1://应答检查
+                switch(info_temp->retry)
                 {
-                    File_Output(rf_now,Valve_Status,PSI_Status,1,1,info_temp->rssi,1,0);
-                    LOG_I("radio_%d second heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
-                    heart_time_start(30000);
+                case 0:
+                    if(info_temp->received)
+                    {
+                        heart_mode = send;
+                        File_Output(rf_now,Valve_Status,PSI_Status,1,0,info_temp->rssi,1,0);
+                        LOG_I("radio_%d first heart success\r\n",info_temp->freq);
+                        radio_refresh(info_temp);
+                        heart_time_start(28700);
+                    }
+                    else
+                    {
+                        heart_mode = randtime_7;
+                        LOG_W("radio_%d first heart fail\r\n",info_temp->freq);
+                        info_temp->retry++;
+                        rt_sem_release(heart_sem);
+                    }
+                    break;
+                case 1:
+                    if(info_temp->received)
+                    {
+                        heart_mode = send;
+                        File_Output(rf_now,Valve_Status,PSI_Status,1,1,info_temp->rssi,1,0);
+                        LOG_I("radio_%d second heart success\r\n",info_temp->freq);
+                        radio_refresh(info_temp);
+                        heart_time_start(28700);
+                    }
+                    else
+                    {
+                        heart_mode = randtime_7;
+                        LOG_W("radio_%d second heart fail\r\n",info_temp->freq);
+                        info_temp->retry++;
+                        rt_sem_release(heart_sem);
+                    }
+                    break;
+                case 2:
+                    if(info_temp->received)
+                    {
+                        heart_mode = send;
+                        File_Output(rf_now,Valve_Status,PSI_Status,1,2,info_temp->rssi,1,0);
+                        LOG_I("radio_%d third heart success\r\n",info_temp->freq);
+                        radio_refresh(info_temp);
+                        heart_time_start(28700);
+                    }
+                    else
+                    {
+                        heart_mode = randtime_8;
+                        LOG_W("radio_%d third heart fail\r\n",info_temp->freq);
+                        info_temp->retry++;
+                        heart_time_start(1000);
+                    }
+                    break;
+                case 3:
+                    File_Output(rf_now,Valve_Status,PSI_Status,info_temp->received,3,(info_temp->received>0)?info_temp->rssi:0,1,0);
+                    if(info_temp->received)
+                    {
+                        LOG_I("radio_%d final heart success\r\n",info_temp->freq);
+                        radio_refresh(info_temp);
+                        heart_time_start(28700);
+                    }
+                    else
+                    {
+                        LOG_W("radio_%d final heart fail\r\n",info_temp->freq);
+                        alive_count_increase(rf_now);
+                        rf_now = !rf_now;
+                        rf_offline(info_temp);
+                        info_temp->retry = 0;
+                        rt_sem_release(heart_sem);
+                    }
+                    heart_mode = send;
+                    break;
                 }
-                else
-                {
-                    LOG_W("radio_%d second heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
-                    info_temp->retry++;
-                    heart_time_start(get_srand_time(0,7));
-                }
+                rt_mutex_release(rf_lock);
                 break;
-            case 2:
-                rt_thread_mdelay(1000);
-                if(info_temp->received)
-                {
-                    File_Output(rf_now,Valve_Status,PSI_Status,1,2,info_temp->rssi,1,0);
-                    LOG_I("radio_%d third heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
-                    heart_time_start(30000);
-                }
-                else
-                {
-                    LOG_W("radio_%d third heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
-                    info_temp->retry++;
-                    heart_time_start(get_srand_time(1,9));
-                }
+            case randtime_7://第1，2次随机发送等待
+                heart_mode = send;
+                rand_time = get_srand_time(0,7);
+                heart_time_start(rand_time);
                 break;
-            case 3:
-                rt_thread_mdelay(1000);
-                File_Output(rf_now,Valve_Status,PSI_Status,info_temp->received,3,(info_temp->received>0)?info_temp->rssi:0,1,0);
-                if(info_temp->received)
-                {
-                    LOG_I("radio_%d final heart success\r\n",info_temp->freq);
-                    radio_refresh(info_temp);
-                    heart_time_start(30000);
-                }
-                else
-                {
-                    LOG_W("radio_%d final heart fail\r\n",info_temp->freq);
-                    alive_count_increase(rf_now);
-                    rf_now = !rf_now;
-                    rf_offline(info_temp);
-                    info_temp->retry = 0;
-                    rt_sem_release(heart_sem);
-                }
+            case randtime_8://第3次随机发送等待
+                heart_mode = send;
+                rand_time = get_srand_time(0,8);
+                heart_time_start(rand_time);
                 break;
             }
         }
@@ -312,12 +416,15 @@ void heart_callback(void *parameter)
 }
 void heart_init(void)
 {
+    info_433.freq = 433;
+    info_4068.freq = 4068;
+    rf_lock = rt_mutex_create("rf_Lock", RT_IPC_FLAG_PRIO);
     heart_t = rt_thread_create("heart", heart_callback, RT_NULL, 2048, 7, 10);
     buttontest_t = rt_thread_create("buttontest", buttontest_callback, RT_NULL, 2048, 7, 10);
     connect_sem = rt_sem_create("connect_sem", 0, RT_IPC_FLAG_PRIO);
     connect_timer = rt_timer_create("connect", connect_timer_callback, RT_NULL, 5000, RT_TIMER_FLAG_SOFT_TIMER|RT_TIMER_FLAG_PERIODIC);
     heart_sem = rt_sem_create("heart_sem", 0, RT_IPC_FLAG_PRIO);
-    heart_timer = rt_timer_create("heart", heart_timer_callback, RT_NULL, 10000, RT_TIMER_FLAG_SOFT_TIMER|RT_TIMER_FLAG_ONE_SHOT);
+    heart_timer = rt_timer_create("heart", heart_timer_callback, RT_NULL, 1000, RT_TIMER_FLAG_SOFT_TIMER|RT_TIMER_FLAG_ONE_SHOT);
     button_sem = rt_sem_create("button_sem", 0, RT_IPC_FLAG_PRIO);
     if(heart_t!=RT_NULL)
     {

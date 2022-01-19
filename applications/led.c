@@ -270,42 +270,29 @@ void led_rf4068_stop(void)
     agile_led_off(LED6_R);
     agile_led_off(LED6_G);
 }
-void beep_calc(uint8_t level_4068,uint8_t level_433,uint8_t alive_4068,uint8_t alive_433)
+void beep_calc(uint8_t level_4068,uint8_t level_433)
 {
-    uint8_t mode_temp;
-    if(alive_4068==0 || alive_433==0)
+//    if(alive_4068==0 || alive_433==0)
+//    {
+//        if(alive_4068==0 && alive_433==0)
+//        {
+//            beep_mode = 3;
+//        }
+//        else
+//        {
+//            beep_mode = 2;
+//        }
+//        return;
+//    }
+    if(level_4068 == 2 || level_433 == 2)
     {
-        if(alive_4068==0 && alive_433==0)
-        {
-            mode_temp = 3;
-        }
-        else
-        {
-            mode_temp = 2;
-        }
-        if(mode_temp!=beep_mode)
-        {
-            beep_mode = mode_temp;
-            beep_start(mode_temp);
-        }
-        return;
-    }
-    else if(level_4068 == 2 || level_433 == 2)
-    {
-        mode_temp = 1;
-        if(mode_temp!=beep_mode)
-        {
-            beep_mode = mode_temp;
-            beep_start(mode_temp);
-        }
+        beep_start(1);
         return;
     }
     else if(level_4068 > 2 && level_433 > 2)
     {
-        beep_mode = 0;
         beep_stop();
     }
-
 }
 void transmitter_lost(void)
 {
@@ -372,27 +359,32 @@ void receiver_on(void)
 }
 void beep_start(uint8_t select)
 {
-    agile_led_stop(BEEP);
-    agile_led_off(BEEP);
-    switch(select)
+    if(select!=beep_mode)
     {
-    case 1://10s/1声
-        agile_led_set_light_mode(BEEP,"300,200,10000",-1);
-        break;
-    case 2://5s/2声
-        agile_led_set_light_mode(BEEP,"300,200,200,200,5000",-1);
-        break;
-    case 3://5s/3声
-        agile_led_set_light_mode(BEEP,"300,200,200,200,200,200,5000",-1);
-        break;
-    case 4://5s/5声
-        agile_led_set_light_mode(BEEP,"300,200,200,200,200,200,200,200,200,200,200",1);
-        break;
+        beep_mode = select;
+        agile_led_stop(BEEP);
+        agile_led_off(BEEP);
+        switch(select)
+        {
+        case 1://10s/1声
+            agile_led_set_light_mode(BEEP,"0,200,10000",-1);
+            break;
+        case 2://5s/2声
+            agile_led_set_light_mode(BEEP,"0,200,200,200,5000",-1);
+            break;
+        case 3://5s/3声
+            agile_led_set_light_mode(BEEP,"0,200,200,200,200,200,5000",-1);
+            break;
+        case 4://5s/5声
+            agile_led_set_light_mode(BEEP,"0,200,200,200,200,200,200,200,200,200,200",1);
+            break;
+        }
+        agile_led_start(BEEP);
     }
-    agile_led_start(BEEP);
 }
 void beep_stop(void)
 {
+    beep_mode = 0;
     agile_led_stop(BEEP);
     agile_led_off(BEEP);
 }
