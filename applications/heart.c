@@ -37,6 +37,7 @@ rt_timer_t heart_timer = RT_NULL;
 rt_sem_t connect_sem = RT_NULL;
 rt_sem_t heart_sem = RT_NULL;
 rt_sem_t button_sem = RT_NULL;
+rt_mutex_t rf_lock = RT_NULL;
 
 rf_info info_433;
 rf_info info_4068;
@@ -168,7 +169,6 @@ void rf_write(uint8_t rf_select,int rssi)
         File_Output(0,Valve_Status,PSI_Status,1,info_4068.retry,rssi,1,0);
     }
 }
-rt_mutex_t rf_lock = RT_NULL;
 void buttontest_callback(void *parameter)
 {
     rf_info *info_temp = rt_malloc(sizeof(rf_info));

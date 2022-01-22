@@ -44,19 +44,27 @@ void ID_Init(void)
 }
 void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button)
 {
-    rt_mutex_take(spsi_read_mutex, RT_WAITING_FOREVER);
-    char *buf = rt_malloc(64);
-    Global_Nums ++;//序列增加
-    sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,freq,valve,psi,shake,send_num,rssi,first,button);
-    if(Global_Nums%200000==0)
+    rt_err_t result;
+    result = rt_mutex_trytake(spsi_read_mutex);
+    if(result == RT_EOK)
     {
-        Global_Pos = 54;
+        char *buf = rt_malloc(64);
+        Global_Nums ++;//序列增加
+        sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,freq,valve,psi,shake,send_num,rssi,first,button);
+        if(Global_Nums%200000==0)
+        {
+            Global_Pos = 54;
+        }
+        Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
+        Flash_IDNums_Change(Global_Nums);
+        Flash_Pos_Change(Global_Pos);
+        LOG_D("Write to Flash %s\r\n",buf);
+        rt_free(buf);
     }
-    Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
-    Flash_IDNums_Change(Global_Nums);
-    Flash_Pos_Change(Global_Pos);
-    LOG_D("Write to Flash %s\r\n",buf);
-    rt_free(buf);
+    else if(result == -RT_ETIMEOUT)
+    {
+        LOG_E("File is reading now,write again later\r\n");
+    }
     rt_mutex_release(spsi_read_mutex);
 }
 void spsiread(void)
@@ -72,11 +80,11 @@ void spsiread(void)
         rym_upload_file(dev, "/SPSI_log.csv");
         rt_console_set_device("uart1");
         finsh_set_device("uart1");
-        rt_mutex_release(spsi_read_mutex);
     }
     else if(result == -RT_ETIMEOUT)
     {
-        LOG_E("File is writing now,try again later\r\n");
+        LOG_E("File is writing now,read again later\r\n");
     }
+    rt_mutex_release(spsi_read_mutex);
 }
 MSH_CMD_EXPORT(spsiread,spsiread);

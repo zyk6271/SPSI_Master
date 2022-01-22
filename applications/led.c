@@ -272,18 +272,6 @@ void led_rf4068_stop(void)
 }
 void beep_calc(uint8_t level_4068,uint8_t level_433)
 {
-//    if(alive_4068==0 || alive_433==0)
-//    {
-//        if(alive_4068==0 && alive_433==0)
-//        {
-//            beep_mode = 3;
-//        }
-//        else
-//        {
-//            beep_mode = 2;
-//        }
-//        return;
-//    }
     if(level_4068 == 2 || level_433 == 2)
     {
         beep_start(1);
