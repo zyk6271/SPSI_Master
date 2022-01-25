@@ -42,7 +42,7 @@ void ID_Init(void)
     }
     LOG_I("Init ID is %d,Init Pos is %d\r\n",Global_Nums,Global_Pos);
 }
-void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button)
+void File_Output(uint8_t select,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t send_num,int rssi,uint8_t first,uint8_t button)
 {
     rt_err_t result;
     result = rt_mutex_trytake(spsi_read_mutex);
@@ -50,7 +50,7 @@ void File_Output(uint8_t freq,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t se
     {
         char *buf = rt_malloc(64);
         Global_Nums ++;//序列增加
-        sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,freq,valve,psi,shake,send_num,rssi,first,button);
+        sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,(select>0)?433:4068,valve,psi,shake,send_num,rssi,first,button);
         if(Global_Nums%200000==0)
         {
             Global_Pos = 54;
