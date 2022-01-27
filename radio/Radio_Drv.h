@@ -36,12 +36,16 @@ struct ax5043_config
     uint8_t axradio_framing_synclen;
     uint8_t axradio_phy_preamble_flags;
     uint8_t axradio_phy_preamble_byte;
+    uint8_t axradio_phy_preamble_appendbits;
+    uint8_t axradio_phy_preamble_appendpattern;
     uint32_t axradio_phy_chanfreq[1];
     uint8_t axradio_phy_chanvcoiinit[1];
     uint8_t axradio_phy_chanpllrnginit[1];
     int  axradio_phy_maxfreqoffset;
     int8_t axradio_phy_rssioffset;
     int8_t axradio_phy_rssireference;
+    uint8_t axradio_framing_syncflags;
+    uint8_t axradio_framing_syncword[4];
 };
 
 void IRQ1_Bounding(void);

@@ -245,7 +245,6 @@ void AX5043_OFF(struct ax5043 *dev)
 void TransmitData(struct ax5043 *dev)
 {
     uint8_t ubFreeCnt;
-    uint8_t i;
     while(1)
     {
         ubFreeCnt = SpiReadSingleAddressRegister(dev,REG_AX5043_FIFOFREE0); //uint8_t cnt = AX5043_FIFOFREE0;
@@ -279,19 +278,34 @@ void TransmitData(struct ax5043 *dev)
                 {
                     if (ubFreeCnt < 15)
                         goto fifocommit;
-                    i = SpiReadSingleAddressRegister(dev,REG_AX5043_FRAMING);
-                    if ((i & 0x0E) == 0x06 && dev->config->axradio_framing_synclen)                                  //axradio_framing_synclen=32
+                    if (dev->config->axradio_phy_preamble_appendbits) {
+                        uint8_t byte;
+                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA, (AX5043_FIFOCMD_DATA | (2 << 5)));
+                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA, 0x1C);
+                        byte = dev->config->axradio_phy_preamble_appendpattern;
+                        if (SpiReadLongAddressRegister(dev,REG_AX5043_PKTADDRCFG) & 0x80) {
+                            // msb first -> stop bit below
+                            byte &= 0xFF << (8-dev->config->axradio_phy_preamble_appendbits);
+                            byte |= 0x80 >> dev->config->axradio_phy_preamble_appendbits;
+                        } else {
+                            // lsb first -> stop bit above
+                            byte &= 0xFF >> (8-dev->config->axradio_phy_preamble_appendbits);
+                            byte |= 0x01 << dev->config->axradio_phy_preamble_appendbits;
+                        }
+                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA, byte);
+                    }
+                    if ((SpiReadSingleAddressRegister(dev,REG_AX5043_FRAMING) & 0x0E) == 0x06 && dev->config->axradio_framing_synclen)                                  //axradio_framing_synclen=32
                     {
                         uint8_t len_byte = dev->config->axradio_framing_synclen;
                         uint8_t i = (len_byte & 0x07) ? 0x04 : 0;
                         len_byte += 7;
                         len_byte >>= 3;
                         SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0x01 | ((len_byte + 1) << 5));//AX5043_FIFODATA =   0xA1; //0x01 | ((len_byte + 1) << 5);  //0xA1
-                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0x18|i);//AX5043_FIFODATA = 0x18;//axradio_framing_syncflags | i;  //0x18   �������ʾʲô?
-                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0xCC);//AX5043_FIFODATA = 0xcc;
-                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0xAA);//AX5043_FIFODATA = 0xaa;
-                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0xCC);//AX5043_FIFODATA = 0xcc;
-                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA,0xAA);//AX5043_FIFODATA = 0xaa;
+                        SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA, dev->config->axradio_framing_syncflags | i);
+                        for (i = 0; i < len_byte; ++i) {
+                            // better put a brace, it might prevent SDCC from optimizing away the assignement...
+                            SpiWriteSingleAddressRegister(dev,REG_AX5043_FIFODATA, dev->config->axradio_framing_syncword[i]);
+                        }
                         dev->ubRFState = trxstate_tx_packet;
                         break;
                     }

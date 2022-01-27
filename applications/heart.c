@@ -189,7 +189,7 @@ void buttontest_callback(void *parameter)
             switch(info_temp->retry)
             {
             case 0:
-                rt_thread_mdelay(1000);
+                rt_thread_mdelay(2000);
                 if(info_temp->testreceived)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,0,info_temp->rssi,1,1);
@@ -210,7 +210,7 @@ void buttontest_callback(void *parameter)
                 }
                 break;
             case 1:
-                rt_thread_mdelay(1000);
+                rt_thread_mdelay(2000);
                 if(info_temp->testreceived)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,1,info_temp->rssi,1,1);
@@ -231,7 +231,7 @@ void buttontest_callback(void *parameter)
                 }
                 break;
             case 2:
-                rt_thread_mdelay(1000);
+                rt_thread_mdelay(2000);
                 if(info_temp->testreceived)
                 {
                     File_Output(rf_now,Valve_Status,PSI_Status,1,2,info_temp->rssi,1,1);
@@ -252,7 +252,7 @@ void buttontest_callback(void *parameter)
                 }
                 break;
             case 3:
-                rt_thread_mdelay(1000);
+                rt_thread_mdelay(2000);
                 File_Output(rf_now,Valve_Status,PSI_Status,info_temp->testreceived,3,(info_temp->testreceived>0)?info_temp->rssi:0,1,1);
                 if(info_temp->testreceived)
                 {
@@ -291,7 +291,7 @@ void heart_callback(void *parameter)
         if(rt_sem_take(connect_sem,100)==RT_EOK)
         {
             heart_request(1);
-            rt_thread_mdelay(1000);
+            rt_thread_mdelay(2000);
             if(info_433.received)
             {
                 LOG_I("rf_connected success\r\n");
@@ -320,7 +320,7 @@ void heart_callback(void *parameter)
                     info_temp = &info_4068;
                 }
                 heart_request(rf_now);
-                heart_time_start(1000);
+                heart_time_start(2000);
                 heart_mode = check;
                 rt_mutex_trytake(rf_lock);
                 break;
@@ -334,7 +334,7 @@ void heart_callback(void *parameter)
                         File_Output(rf_now,Valve_Status,PSI_Status,1,0,info_temp->rssi,1,0);
                         LOG_I("radio_%d first heart success\r\n",info_temp->freq);
                         radio_refresh(info_temp);
-                        heart_time_start(28700);
+                        heart_time_start(27700);
                     }
                     else
                     {
@@ -351,7 +351,7 @@ void heart_callback(void *parameter)
                         File_Output(rf_now,Valve_Status,PSI_Status,1,1,info_temp->rssi,1,0);
                         LOG_I("radio_%d second heart success\r\n",info_temp->freq);
                         radio_refresh(info_temp);
-                        heart_time_start(28700);
+                        heart_time_start(27700);
                     }
                     else
                     {
@@ -368,7 +368,7 @@ void heart_callback(void *parameter)
                         File_Output(rf_now,Valve_Status,PSI_Status,1,2,info_temp->rssi,1,0);
                         LOG_I("radio_%d third heart success\r\n",info_temp->freq);
                         radio_refresh(info_temp);
-                        heart_time_start(28700);
+                        heart_time_start(27700);
                     }
                     else
                     {
@@ -384,7 +384,7 @@ void heart_callback(void *parameter)
                     {
                         LOG_I("radio_%d final heart success\r\n",info_temp->freq);
                         radio_refresh(info_temp);
-                        heart_time_start(28700);
+                        heart_time_start(27700);
                     }
                     else
                     {

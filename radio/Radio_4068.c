@@ -45,16 +45,23 @@ struct ax5043_config *rf_4068_config_init(void)
     static struct ax5043_config *config;
     config = rt_malloc(sizeof(struct ax5043_config));
     config->axradio_phy_vcocalib = 0;
-    config->axradio_framing_synclen = 32;
+    config->axradio_phy_preamble_len = 32;
     config->axradio_phy_preamble_byte = 0x55;
     config->axradio_phy_preamble_flags = 0x38;
-    config->axradio_phy_preamble_len = 32;
+    config->axradio_phy_preamble_appendbits = 0;
+    config->axradio_phy_preamble_appendpattern = 0x00;
     config->axradio_phy_chanfreq[0] = 0x0190716d;
     config->axradio_phy_chanvcoiinit[0] = 0x00;
     config->axradio_phy_chanpllrnginit[0] = 0xFF;
     config->axradio_phy_maxfreqoffset = 157;
     config->axradio_phy_rssireference = 0x3A;
     config->axradio_phy_rssioffset = 64;
+    config->axradio_framing_synclen = 32;
+    config->axradio_framing_syncflags = 0x38;
+    config->axradio_framing_syncword[0] = 0xcc;
+    config->axradio_framing_syncword[1] = 0xaa;
+    config->axradio_framing_syncword[2] = 0xcc;
+    config->axradio_framing_syncword[3] = 0xaa;
     return config;
 }
 void rf_4068_sem_init(void)
@@ -161,7 +168,7 @@ void rf_4068_start(void)
     rf_4068_sem_init();
     rf_4068_task = rt_thread_create("rf_4068_task", rf_4068_task_callback, RT_NULL, 2048, 8, 10);
     rt_thread_startup(rf_4068_task);
-    rf_4068_send_timer = rt_timer_create("rf_4068_send timeout", rf_4068_send_timer_callback, RT_NULL, 120, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
+    rf_4068_send_timer = rt_timer_create("rf_4068_send timeout", rf_4068_send_timer_callback, RT_NULL, 1000, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
     rf_4068_Init();
 }
 uint8_t buf1[]={0x31,0x31,0x32,0x32,0x33,0x33,0x34,0x34,0x35,0x35,0x36,0x36,0x37,0x37};
