@@ -125,10 +125,6 @@ void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
                  valve_control(Rx_message.Data);
                  rf_write(1,rssi);
                  break;
-             case 3://回复子机应答
-                 LOG_I("RF 433 PSI Slave is received\r\n");
-                 rf_433_Enqueue(Rx_message.From_ID, 3, PSI_Status);
-                 break;
              }
              led_rf433_start(info_433.rssi_level);
          }
@@ -162,10 +158,6 @@ void Solve_4068(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
                  LOG_I("RF 4068 PSI Control is received\r\n");
                  valve_control(Rx_message.Data);
                  rf_write(0,rssi);
-                 break;
-             case 3://回复子机应答
-                 LOG_I("RF 4068 PSI Slave is received\r\n");
-                 rf_4068_Enqueue(Rx_message.From_ID,3,PSI_Status);
                  break;
              }
              led_rf4068_start(info_4068.rssi_level);

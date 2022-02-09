@@ -95,6 +95,11 @@ void psi_upload(uint8_t value)
         rf_4068_Enqueue(Target_ID,2,value);
     }
 }
+void long_upload(void)
+{
+    rf_433_Enqueue(Target_ID,3,PSI_Status);
+    rf_4068_Enqueue(Target_ID,3,PSI_Status);
+}
 void connect_timer_callback(void *parameter)
 {
     rt_sem_release(connect_sem);

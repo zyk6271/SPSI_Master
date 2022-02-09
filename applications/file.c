@@ -71,6 +71,8 @@ void spsiread(void)
 {
     rt_err_t result;
     rt_device_t dev;
+    long_upload();
+    rt_thread_mdelay(500);
     result = rt_mutex_trytake(spsi_read_mutex);
     if(result == RT_EOK)
     {
