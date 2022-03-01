@@ -58,7 +58,7 @@ uint8_t rf4068_rssi_level_select(int rssi)
         rf4068_rssi_count_resume();
         rf4068_alive_count_resume();
     }
-    else if(rssi <= -90 && rssi > -95)
+    else if(rssi <= -90)
     {
         value = 2;
         rf4068_rssi_count_increase();
@@ -87,7 +87,7 @@ uint8_t rf433_rssi_level_select(int rssi)
         rf433_rssi_count_resume();
         rf433_alive_count_resume();
     }
-    else if(rssi <= -90 && rssi > -95)
+    else if(rssi <= -90)
     {
         value = 2;
         rf433_rssi_count_increase();
@@ -98,7 +98,7 @@ uint8_t rf433_rssi_level_select(int rssi)
 void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
 {
     Message Rx_message;
-    if(rx_buffer[rx_len-1]=='S' && rssi>-95)
+    if(rx_buffer[rx_len-1]=='S')
      {
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)
@@ -133,7 +133,7 @@ void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
 void Solve_4068(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
 {
     Message Rx_message;
-    if(rx_buffer[rx_len-1]=='S' && rssi>-95)
+    if(rx_buffer[rx_len-1]=='S')
      {
          sscanf((const char *)&rx_buffer[1],"S{%ld,%ld,%d,%d}S",&Rx_message.Target_ID,&Rx_message.From_ID,&Rx_message.Command,&Rx_message.Data);
          if(Rx_message.Target_ID==Self_ID && Rx_message.From_ID==Target_ID)

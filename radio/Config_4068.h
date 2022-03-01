@@ -87,7 +87,7 @@ uint16_t set_registers_4068[][2]=
     {REG_AX5043_TXRATE0                 , 0x83},
     {REG_AX5043_TXPWRCOEFFB1            , 0x07},
     {REG_AX5043_TXPWRCOEFFB0            , 0x00},
-    {REG_AX5043_PLLVCOI                 , 0xAA},
+    {REG_AX5043_PLLVCOI                 , 0x85},
     {REG_AX5043_PLLRNGCLK               , 0x04},
     {REG_AX5043_BBTUNE                  , 0x0F},
     {REG_AX5043_BBOFFSCAP               , 0x77},
