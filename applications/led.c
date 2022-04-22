@@ -290,10 +290,11 @@ void transmitter_lost(void)
 }
 void transmitter_off(void)
 {
-    agile_led_set_light_mode(LED7_R,"300,100",1);
-    agile_led_set_light_mode(LED7_G,"300,100",1);
-    agile_led_start(LED7_G);
-    agile_led_start(LED7_R);
+//    agile_led_set_light_mode(LED7_R,"300,100",1);
+//    agile_led_set_light_mode(LED7_G,"300,100",1);
+//    agile_led_start(LED7_G);
+//    agile_led_start(LED7_R);
+    transmitter_lost();
 }
 void transmitter_on(void)
 {
@@ -334,10 +335,11 @@ void receiver_blink(uint8_t valve)
 }
 void receiver_off(void)
 {
-    agile_led_set_light_mode(LED8_R,"300,100",1);
-    agile_led_set_light_mode(LED8_G,"300,100",1);
-    agile_led_start(LED8_G);
-    agile_led_start(LED8_R);
+//    agile_led_set_light_mode(LED8_R,"300,100",1);
+//    agile_led_set_light_mode(LED8_G,"300,100",1);
+//    agile_led_start(LED8_G);
+//    agile_led_start(LED8_R);
+    receiver_lost();
 }
 void receiver_on(void)
 {

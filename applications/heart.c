@@ -442,3 +442,18 @@ void heart_init(void)
     rt_timer_start(connect_timer);
 }
 MSH_CMD_EXPORT(heart_init,heart_init);
+
+rt_thread_t record_t = RT_NULL;
+void record_callback(void *parameter)
+{
+    while(1)
+    {
+        PSI_Output(PSI_Status);
+        rt_thread_mdelay(30000);
+    }
+}
+void record_init(void)
+{
+    record_t = rt_thread_create("record", record_callback, RT_NULL, 2048, 10, 10);
+    rt_thread_startup(record_t);
+}

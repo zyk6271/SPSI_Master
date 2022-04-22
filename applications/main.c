@@ -25,15 +25,16 @@ int main(void)
 {
     flash_Init();
     ID_Init();
-    rf_433_start();
-    rf_4068_start();
+    //rf_433_start();
+    //rf_4068_start();
     led_Init();
-    warn_thread_init();
-    heart_init();
+    //warn_thread_init();
+    //heart_init();
     button_init();
     psi_init();
-    RadioQueueInit();
-    seg_init();
+    record_init();
+    //RadioQueueInit();
+    //seg_init();
     while (1)
     {
         rt_thread_mdelay(1000);

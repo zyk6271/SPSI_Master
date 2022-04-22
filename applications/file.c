@@ -16,7 +16,7 @@
 #include "little.h"
 
 #define DBG_TAG "file"
-#define DBG_LVL DBG_LOG
+#define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
 uint32_t Global_Nums=0;
@@ -50,10 +50,35 @@ void File_Output(uint8_t select,uint8_t valve,uint8_t psi,uint8_t shake,uint8_t 
     {
         char *buf = rt_malloc(64);
         Global_Nums ++;//序列增加
-        sprintf(buf,"%d %d %d %d %d %d %d %d %d\n",Global_Nums,(select>0)?433:4068,valve,psi,shake,send_num,rssi,first,button);
+        sprintf(buf,"%d %d\n",Global_Nums,psi);
         if(Global_Nums%200000==0)
         {
-            Global_Pos = 54;
+            Global_Pos = 10;
+        }
+        Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
+        Flash_IDNums_Change(Global_Nums);
+        Flash_Pos_Change(Global_Pos);
+        LOG_D("Write to Flash %s\r\n",buf);
+        rt_free(buf);
+    }
+    else if(result == -RT_ETIMEOUT)
+    {
+        LOG_E("File is reading now,write again later\r\n");
+    }
+    rt_mutex_release(spsi_read_mutex);
+}
+void PSI_Output(uint8_t psi)
+{
+    rt_err_t result;
+    result = rt_mutex_trytake(spsi_read_mutex);
+    if(result == RT_EOK)
+    {
+        char *buf = rt_malloc(64);
+        Global_Nums ++;//序列增加
+        sprintf(buf,"%d %d\n",Global_Nums,psi);
+        if(Global_Nums%200000==0)
+        {
+            Global_Pos = 10;
         }
         Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
         Flash_IDNums_Change(Global_Nums);
@@ -71,8 +96,8 @@ void spsiread(void)
 {
     rt_err_t result;
     rt_device_t dev;
-    long_upload();
-    rt_thread_mdelay(500);
+    //long_upload();
+//    rt_thread_mdelay(500);
     result = rt_mutex_trytake(spsi_read_mutex);
     if(result == RT_EOK)
     {

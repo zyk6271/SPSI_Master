@@ -93,7 +93,8 @@ uint32_t file_init(void)
 {
     static uint32_t pos_tmp;
     char *buf = rt_malloc(64);
-    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
+//    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
+    sprintf(buf,"No: PSI:\n");
     unlink("/SPSI_log.csv");
     pos_tmp = write_csv(buf,0,strlen(buf));
     rt_free(buf);
