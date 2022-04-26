@@ -75,10 +75,10 @@ void PSI_Output(uint8_t psi)
     {
         char *buf = rt_malloc(64);
         Global_Nums ++;//序列增加
-        sprintf(buf,"%d %d\n",Global_Nums,psi);
+        sprintf(buf,"%d %d %d\n",Global_Nums,timeget(),psi);
         if(Global_Nums%200000==0)
         {
-            Global_Pos = 10;
+            Global_Pos = 16;
         }
         Global_Pos = write_csv(buf,Global_Pos,strlen(buf));
         Flash_IDNums_Change(Global_Nums);

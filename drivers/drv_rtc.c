@@ -9,6 +9,8 @@
  */
 
 #include "board.h"
+#include "time.h"
+#include "rtc.h"
 #include<rtthread.h>
 #include<rtdevice.h>
 
@@ -88,7 +90,26 @@ static rt_err_t set_rtc_time_stamp(time_t time_stamp)
     HAL_RTCEx_BKUPWrite(&RTC_Handler, RTC_BKP_DR1, BKUP_REG_DATA);
     return RT_EOK;
 }
-
+uint32_t timeget(void)
+{
+    uint32_t timestamp = get_rtc_timestamp();
+    LOG_I("timestamp is %d\r\n",timestamp);
+    return timestamp;
+}
+MSH_CMD_EXPORT(timeget,timeget);
+void timeset(int argc, char ** argv)
+{
+    if (argc < 2)
+    {   // parameter error
+        LOG_E("timeset parameter error\r\n");
+    }
+    else
+    {
+        set_rtc_time_stamp(atol(argv[1]));
+        LOG_I("timestamp is set to %d\r\n",atol(argv[1]));
+    }
+}
+MSH_CMD_EXPORT(timeset,rtc timestamp set);
 static void rt_rtc_init(void)
 {
 #ifndef SOC_SERIES_STM32H7
@@ -207,7 +228,7 @@ const static struct rt_device_ops rtc_ops =
 };
 #endif
 
-static rt_err_t rt_hw_rtc_register(rt_device_t device, const char *name, rt_uint32_t flag)
+rt_err_t rt_hw_rtc_register(rt_device_t device, const char *name, rt_uint32_t flag)
 {
     RT_ASSERT(device != RT_NULL);
 

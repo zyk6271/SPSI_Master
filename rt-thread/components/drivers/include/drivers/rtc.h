@@ -39,10 +39,10 @@ typedef struct rt_rtc_device
     const struct rt_rtc_ops *ops;
 } rt_rtc_dev_t;
 
-rt_err_t rt_hw_rtc_register(rt_rtc_dev_t  *rtc,
-                            const char    *name,
-                            rt_uint32_t    flag,
-                            void          *data);
+//rt_err_t rt_hw_rtc_register(rt_rtc_dev_t  *rtc,
+//                            const char    *name,
+//                            rt_uint32_t    flag,
+//                            void          *data);
 
 rt_err_t set_date(rt_uint32_t year, rt_uint32_t month, rt_uint32_t day);
 rt_err_t set_time(rt_uint32_t hour, rt_uint32_t minute, rt_uint32_t second);

@@ -178,10 +178,28 @@
 
 /* language packages */
 
+/* JSON: JavaScript Object Notation, a lightweight data-interchange format */
+
+/* end of JSON: JavaScript Object Notation, a lightweight data-interchange format */
+
+/* XML: Extensible Markup Language */
+
+/* end of XML: Extensible Markup Language */
 /* end of language packages */
 
 /* multimedia packages */
 
+/* LVGL: powerful and easy-to-use embedded GUI library */
+
+/* end of LVGL: powerful and easy-to-use embedded GUI library */
+
+/* u8g2: a monochrome graphic library */
+
+/* end of u8g2: a monochrome graphic library */
+
+/* PainterEngine: A cross-platform graphics application framework written in C language */
+
+/* end of PainterEngine: A cross-platform graphics application framework written in C language */
 /* end of multimedia packages */
 
 /* tools packages */
@@ -198,6 +216,25 @@
 
 /* system packages */
 
+/* enhanced kernel services */
+
+/* end of enhanced kernel services */
+
+/* POSIX extension functions */
+
+/* end of POSIX extension functions */
+
+/* acceleration: Assembly language or algorithmic acceleration packages */
+
+/* end of acceleration: Assembly language or algorithmic acceleration packages */
+
+/* CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
+
+/* end of CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
+
+/* Micrium: Micrium software products porting for RT-Thread */
+
+/* end of Micrium: Micrium software products porting for RT-Thread */
 #define PKG_USING_FAL
 #define FAL_DEBUG 0
 #define FAL_PART_HAS_TABLE_CFG
@@ -226,24 +263,24 @@
 #define SYSWATCH_WDT_NAME "wdt"
 #define SYSWATCH_WDT_TIMEOUT 5
 #define PKG_USING_SYSWATCH_LATEST_VERSION
-
-/* Micrium: Micrium software products porting for RT-Thread */
-
-/* end of Micrium: Micrium software products porting for RT-Thread */
 /* end of system packages */
 
 /* peripheral libraries and drivers */
 
 #define PKG_USING_AGILE_BUTTON
 #define PKG_AGILE_BUTTON_DEBUG
+#define PKG_AGILE_BUTTON_USING_THREAD_AUTO_INIT
 #define PKG_AGILE_BUTTON_THREAD_STACK_SIZE 1536
 #define PKG_AGILE_BUTTON_THREAD_PRIORITY 15
 #define PKG_AGILE_BUTTON_USING_EXAMPLE
 #define PKG_USING_AGILE_BUTTON_LATEST_VERSION
+#define PKG_AGILE_BUTTON_VER_NUM 0x99999
 #define PKG_USING_AGILE_LED
+#define PKG_AGILE_LED_USING_THREAD_AUTO_INIT
 #define PKG_AGILE_LED_THREAD_STACK_SIZE 1024
 #define PKG_AGILE_LED_THREAD_PRIORITY 14
 #define PKG_USING_AGILE_LED_LATEST_VERSION
+#define PKG_AGILE_LED_VER_NUM 0x99999
 /* end of peripheral libraries and drivers */
 
 /* AI packages */
@@ -252,14 +289,17 @@
 
 /* miscellaneous packages */
 
+/* project laboratory */
+
+/* end of project laboratory */
 
 /* samples: kernel and components samples */
 
 /* end of samples: kernel and components samples */
 
-/* games: games run on RT-Thread console */
+/* entertainment: terminal games and other interesting software packages */
 
-/* end of games: games run on RT-Thread console */
+/* end of entertainment: terminal games and other interesting software packages */
 /* end of miscellaneous packages */
 /* end of RT-Thread online packages */
 
