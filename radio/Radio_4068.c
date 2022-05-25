@@ -80,18 +80,20 @@ void rf_4068_Init(void)
     rf_startup(&rf_4068);
     vcoi_rng_get(&rf_4068);
     Ax5043SetRegisters_RX(&rf_4068);
-    AX5043ReceiverON(&rf_4068);
+    Ax5043ReceiverON(&rf_4068);
 }
 void rf_4068_send_timer_callback(void *parameter)
 {
-    if(rf_4068.ubRFState == trxstate_tx_waitdone)
+    if(rf_4068.ubRFState != trxstate_rx)
     {
         LOG_W("rf_4068 Send timeout\r\n");
-        SpiWriteSingleAddressRegister(&rf_4068,REG_AX5043_PWRMODE, AX5043_PWRSTATE_XTAL_ON);    //AX5043_PWRMODE = AX5043_PWRSTATE_XTAL_ON=0x00;
         SpiWriteSingleAddressRegister(&rf_4068,REG_AX5043_RADIOEVENTMASK0, 0x00);
-        Ax5043SetRegisters_RX(&rf_4068);
-        AX5043Receiver_Continuous(&rf_4068);
+        rf_restart(&rf_4068);
     }
+}
+void rf_4068_send_timer_start(void)
+{
+    rt_timer_start(rf_4068_send_timer);
 }
 void rf_4068_task_callback(void *parameter)
 {
@@ -105,7 +107,8 @@ void rf_4068_task_callback(void *parameter)
             {
             case trxstate_rx: //0x01
                 ReceiveData(&rf_4068);
-                AX5043Receiver_Continuous(&rf_4068);
+                Ax5043SetRegisters_RX(&rf_4068);
+                Ax5043Receiver_Continuous(&rf_4068);
                 if (rf_4068.RxLen != 0)
                 {
                     rf4068_rx_callback(rf_4068.ubRssi,rf_4068.RXBuff,rf_4068.RxLen);
@@ -137,7 +140,6 @@ void rf_4068_task_callback(void *parameter)
                 }
                 TransmitData(&rf_4068);
                 SpiWriteSingleAddressRegister(&rf_4068,REG_AX5043_PWRMODE, AX5043_PWRSTATE_FULL_TX); //AX5043_PWRMODE = AX5043_PWRSTATE_FULL_TX;
-                rt_timer_start(rf_4068_send_timer);
                 break;
             case trxstate_tx_longpreamble:
             case trxstate_tx_shortpreamble:
@@ -145,15 +147,14 @@ void rf_4068_task_callback(void *parameter)
                 TransmitData(&rf_4068);
                 break;
             case trxstate_tx_waitdone:                 //D
+                rt_timer_stop(rf_4068_send_timer);
                 SpiReadSingleAddressRegister(&rf_4068,REG_AX5043_RADIOEVENTREQ0);        //clear Interrupt flag
                 if (SpiReadSingleAddressRegister(&rf_4068,REG_AX5043_RADIOSTATE) != 0)
                 {
                     break;
                 }
-                rt_timer_stop(rf_4068_send_timer);
                 SpiWriteSingleAddressRegister(&rf_4068,REG_AX5043_RADIOEVENTMASK0, 0x00);
-                Ax5043SetRegisters_RX(&rf_4068);
-                AX5043Receiver_Continuous(&rf_4068);
+                rf_restart(&rf_4068);
                 break;
             default:
                 SpiWriteSingleAddressRegister(&rf_4068,REG_AX5043_IRQMASK1, 0x00);
@@ -171,9 +172,3 @@ void rf_4068_start(void)
     rf_4068_send_timer = rt_timer_create("rf_4068_send timeout", rf_4068_send_timer_callback, RT_NULL, 1000, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
     rf_4068_Init();
 }
-uint8_t buf1[]={0x31,0x31,0x32,0x32,0x33,0x33,0x34,0x34,0x35,0x35,0x36,0x36,0x37,0x37};
-void sendtest1(void)
-{
-    Normal_send(&rf_4068,buf1,14);
-}
-MSH_CMD_EXPORT(sendtest1,sendtest1);
