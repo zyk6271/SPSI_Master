@@ -119,7 +119,6 @@ void Solve_433(int rssi,uint8_t *rx_buffer,uint8_t rx_len)
                  receiver_blink(Rx_message.Data);
                  valve_control(Rx_message.Data);
                  break;
-                 break;
              case 2://手动测试
                  LOG_I("RF 433 PSI Control is received\r\n");
                  valve_control(Rx_message.Data);

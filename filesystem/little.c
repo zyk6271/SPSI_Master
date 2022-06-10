@@ -75,29 +75,43 @@ int flash_Init(void)
     LOG_I("Storage Init Success\r\n");
     return RT_EOK;
 }
-uint32_t write_csv(char *buf,uint32_t pos,uint32_t size)
+void write_csv_top(char *buf,uint32_t size)
 {
     static int fd;
-    static uint32_t pos_tmp;
-    fd = open("/SPSI_log.csv", O_WRONLY | O_CREAT);
+    fd = open("/SPSI_TopLog.csv", O_WRONLY | O_CREAT | O_APPEND);
     if (fd>= 0)
     {
-        lseek(fd,pos,SEEK_SET);
         write(fd, buf, size);
-        pos_tmp = ltell(fd);
         close(fd);
     }
-    return pos_tmp;
 }
-uint32_t file_init(void)
+void write_csv_down(char *buf,uint32_t size)
 {
-    static uint32_t pos_tmp;
+    static int fd;
+    fd = open("/SPSI_DownLog.csv", O_WRONLY | O_CREAT | O_APPEND);
+    if (fd>= 0)
+    {
+        write(fd, buf, size);
+        close(fd);
+    }
+}
+void csv_top_init(void)
+{
     char *buf = rt_malloc(64);
     sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
-    unlink("/SPSI_log.csv");
-    pos_tmp = write_csv(buf,0,strlen(buf));
+    unlink("/SPSI_TopLog.csv");
+    write_csv_top(buf,strlen(buf));
     rt_free(buf);
-    LOG_I("SPSI_log.csv is created");
-    return pos_tmp;
+    LOG_I("SPSI_TopLog.csv is created");
 }
-MSH_CMD_EXPORT(file_init,file_init);
+MSH_CMD_EXPORT(csv_top_init,csv_top_init);
+void csv_down_init(void)
+{
+    char *buf = rt_malloc(64);
+    sprintf(buf,"No: Freq: Valve: PSI: Shake: Tx: Rssi: First: Button:\n");
+    unlink("/SPSI_DownLog.csv");
+    write_csv_down(buf,strlen(buf));
+    rt_free(buf);
+    LOG_I("SPSI_DownLog.csv is created");
+}
+MSH_CMD_EXPORT(csv_down_init,csv_down_init);
