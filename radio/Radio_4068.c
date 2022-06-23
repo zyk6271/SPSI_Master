@@ -167,7 +167,7 @@ void rf_4068_task_callback(void *parameter)
 void rf_4068_start(void)
 {
     rf_4068_sem_init();
-    rf_4068_task = rt_thread_create("rf_4068_task", rf_4068_task_callback, RT_NULL, 2048, 8, 10);
+    rf_4068_task = rt_thread_create("rf_4068_task", rf_4068_task_callback, RT_NULL, 2048, 9, 10);
     rt_thread_startup(rf_4068_task);
     rf_4068_send_timer = rt_timer_create("rf_4068_send timeout", rf_4068_send_timer_callback, RT_NULL, 1000, RT_TIMER_FLAG_ONE_SHOT|RT_TIMER_FLAG_SOFT_TIMER);
     rf_4068_Init();
