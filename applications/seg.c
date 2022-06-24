@@ -34,7 +34,6 @@ void rf4068_rssi_count_increase(void)
         rf4068_rssi_count++;
     }
 }
-MSH_CMD_EXPORT(rf4068_rssi_count_increase,rf4068_rssi_count_increase);
 void rf4068_rssi_count_resume(void)
 {
     rf4068_rssi_count = 0;
@@ -58,7 +57,6 @@ void rf433_rssi_count_increase(void)
         rf433_rssi_count++;
     }
 }
-MSH_CMD_EXPORT(rf4068_alive_count_increase,rf4068_alive_count_increase);
 void rf433_rssi_count_resume(void)
 {
     rf433_rssi_count = 0;

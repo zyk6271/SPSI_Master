@@ -28,7 +28,7 @@ int main(void)
     rf_433_start();
     rf_4068_start();
     led_Init();
-    warn_thread_init();
+    warn_init();
     heart_init();
     button_init();
     psi_init();

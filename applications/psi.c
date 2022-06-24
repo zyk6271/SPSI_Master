@@ -32,7 +32,7 @@ void psi_open(void)
     {
         PSI_Status = 1;
         transmitter_on();
-        psi_changed();
+        psi_upload(1);
         LOG_I("Detect psi is open\r\n");
     }
 }
@@ -42,7 +42,7 @@ void psi_close(void)
     {
         PSI_Status = 0;
         transmitter_off();
-        psi_changed();
+        psi_upload(0);
         LOG_I("Detect psi is close\r\n");
     }
 }

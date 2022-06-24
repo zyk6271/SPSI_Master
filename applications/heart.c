@@ -82,14 +82,13 @@ void button_request(uint8_t rf_select)
         break;
     }
 }
-void heart_single(void)
+void psi_upload(uint8_t value)
 {
-    rt_sem_release(button_sem);
-}
-MSH_CMD_EXPORT(heart_single,heart_single);
-void psi_changed(void)
-{
-    rt_sem_release(heart_sem);
+    if(info_4068.alive==1 || info_433.alive==1 )
+    {
+        rf_433_Enqueue(Target_ID,2,value);
+        rf_4068_Enqueue(Target_ID,2,value);
+    }
 }
 void long_upload(void)
 {
@@ -169,6 +168,10 @@ void rf_write(uint8_t rf_select,int rssi)
     else {
         File_Output(0,Valve_Status,PSI_Status,1,info_4068.retry,rssi,1,0);
     }
+}
+void heart_single(void)
+{
+    rt_sem_release(button_sem);
 }
 void buttontest_callback(void *parameter)
 {

@@ -182,7 +182,7 @@ void rf_4068_Dequeue(void *paramaeter)
         else if(Queue_4068.TargetNum>0 && Queue_4068.TargetNum>Queue_4068.NowNum)
         {
             Queue_4068.NowNum++;
-            rt_thread_mdelay(50);
+            rt_thread_mdelay(250);
             rf_4068_send(Queue_4068.Taget_Id[Queue_4068.NowNum],Queue_4068.Command[Queue_4068.NowNum],Queue_4068.Data[Queue_4068.NowNum]);
             LOG_D("rf_4068 Send With Now Num %d,Target Num is %d,Target_Id %ld,counter %d,command %d,data %d\r\n",Queue_4068.NowNum,Queue_4068.TargetNum,Queue_4068.Taget_Id[Queue_4068.NowNum],Queue_4068.Counter[Queue_4068.NowNum],Queue_4068.Command[Queue_4068.NowNum],Queue_4068.Data[Queue_4068.NowNum]);
             rt_thread_mdelay(100);

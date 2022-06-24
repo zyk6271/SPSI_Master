@@ -88,7 +88,7 @@ void warn_callback(void *parameter)
         rt_thread_mdelay(100);
     }
 }
-void warn_thread_init(void)
+void warn_init(void)
 {
     rt_event_init(&rf_event, "rf_event", RT_IPC_FLAG_PRIO);
     warn_t = rt_thread_create("warn", warn_callback, RT_NULL, 1024, 12, 10);
