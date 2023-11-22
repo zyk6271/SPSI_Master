@@ -5,25 +5,28 @@
 
 /* RT-Thread Kernel */
 
-#define RT_NAME_MAX 16
+#define RT_NAME_MAX 8
 #define RT_ALIGN_SIZE 4
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
 #define RT_TICK_PER_SECOND 1000
 #define RT_USING_OVERFLOW_CHECK
 #define RT_USING_HOOK
+#define RT_HOOK_USING_FUNC_PTR
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
-#define IDLE_THREAD_STACK_SIZE 1024
+#define IDLE_THREAD_STACK_SIZE 256
 #define RT_USING_TIMER_SOFT
 #define RT_TIMER_THREAD_PRIO 4
-#define RT_TIMER_THREAD_STACK_SIZE 1024
+#define RT_TIMER_THREAD_STACK_SIZE 2048
 
 /* kservice optimization */
 
+#define RT_KSERVICE_USING_STDLIB
 /* end of kservice optimization */
-#define RT_DEBUG
-#define RT_DEBUG_COLOR
+#define RT_USING_DEBUG
+#define RT_DEBUGING_COLOR
+#define RT_DEBUGING_CONTEXT
 
 /* Inter-Thread communication */
 
@@ -38,7 +41,7 @@
 
 #define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
-#define RT_USING_MEMTRACE
+#define RT_USING_SMALL_MEM_AS_HEAP
 #define RT_USING_HEAP
 /* end of Memory Management */
 
@@ -49,10 +52,11 @@
 #define RT_CONSOLEBUF_SIZE 256
 #define RT_CONSOLE_DEVICE_NAME "uart1"
 /* end of Kernel Device Object */
-#define RT_VER_NUM 0x40004
+#define RT_VER_NUM 0x50002
 /* end of RT-Thread Kernel */
-#define ARCH_ARM
+#define RT_USING_HW_ATOMIC
 #define RT_USING_CPU_FFS
+#define ARCH_ARM
 #define ARCH_ARM_CORTEX_M
 #define ARCH_ARM_CORTEX_M4
 
@@ -60,21 +64,14 @@
 
 #define RT_USING_COMPONENTS_INIT
 #define RT_USING_USER_MAIN
-#define RT_MAIN_THREAD_STACK_SIZE 2048
+#define RT_MAIN_THREAD_STACK_SIZE 1024
 #define RT_MAIN_THREAD_PRIORITY 10
-
-/* C++ features */
-
-/* end of C++ features */
-
-/* Command shell */
-
-#define RT_USING_FINSH
 #define RT_USING_MSH
+#define RT_USING_FINSH
 #define FINSH_USING_MSH
 #define FINSH_THREAD_NAME "tshell"
 #define FINSH_THREAD_PRIORITY 20
-#define FINSH_THREAD_STACK_SIZE 4096
+#define FINSH_THREAD_STACK_SIZE 1024
 #define FINSH_USING_HISTORY
 #define FINSH_HISTORY_LINES 5
 #define FINSH_USING_SYMTAB
@@ -82,72 +79,86 @@
 #define MSH_USING_BUILT_IN_COMMANDS
 #define FINSH_USING_DESCRIPTION
 #define FINSH_ARG_MAX 10
-/* end of Command shell */
+#define FINSH_USING_OPTION_COMPLETION
 
-/* Device virtual file system */
+/* DFS: device virtual file system */
 
 #define RT_USING_DFS
+#define DFS_USING_POSIX
 #define DFS_USING_WORKDIR
+#define DFS_FD_MAX 16
+#define RT_USING_DFS_V1
 #define DFS_FILESYSTEMS_MAX 4
 #define DFS_FILESYSTEM_TYPES_MAX 4
-#define DFS_FD_MAX 16
+#define RT_USING_DFS_ELMFAT
+
+/* elm-chan's FatFs, Generic FAT Filesystem Module */
+
+#define RT_DFS_ELM_CODE_PAGE 437
+#define RT_DFS_ELM_WORD_ACCESS
+#define RT_DFS_ELM_USE_LFN_3
+#define RT_DFS_ELM_USE_LFN 3
+#define RT_DFS_ELM_LFN_UNICODE_0
+#define RT_DFS_ELM_LFN_UNICODE 0
+#define RT_DFS_ELM_MAX_LFN 255
+#define RT_DFS_ELM_DRIVES 2
+#define RT_DFS_ELM_MAX_SECTOR_SIZE 512
+#define RT_DFS_ELM_REENTRANT
+#define RT_DFS_ELM_MUTEX_TIMEOUT 3000
+/* end of elm-chan's FatFs, Generic FAT Filesystem Module */
 #define RT_USING_DFS_DEVFS
-/* end of Device virtual file system */
+/* end of DFS: device virtual file system */
 
 /* Device Drivers */
 
 #define RT_USING_DEVICE_IPC
-#define RT_PIPE_BUFSZ 512
+#define RT_UNAMED_PIPE_NUMBER 64
 #define RT_USING_SERIAL
 #define RT_USING_SERIAL_V1
 #define RT_SERIAL_RB_BUFSZ 64
+#define RT_USING_I2C
+#define RT_USING_I2C_BITOPS
 #define RT_USING_PIN
-#define RT_USING_MTD_NOR
+#define RT_USING_RTC
 #define RT_USING_SPI
-#define RT_USING_SFUD
-#define RT_SFUD_USING_SFDP
-#define RT_SFUD_USING_FLASH_INFO_TABLE
-#define RT_SFUD_SPI_MAX_HZ 50000000
-#define RT_USING_WDT
+#define RT_USING_SPI_MSD
 
 /* Using USB */
 
 /* end of Using USB */
 /* end of Device Drivers */
 
-/* POSIX layer and C standard library */
+/* C/C++ and POSIX layer */
 
-#define RT_LIBC_USING_TIME
-#define RT_LIBC_DEFAULT_TIMEZONE 8
-/* end of POSIX layer and C standard library */
+/* ISO-ANSI C layer */
+
+/* Timezone and Daylight Saving Time */
+
+#define RT_LIBC_USING_LIGHT_TZ_DST
+#define RT_LIBC_TZ_DEFAULT_HOUR 8
+#define RT_LIBC_TZ_DEFAULT_MIN 0
+#define RT_LIBC_TZ_DEFAULT_SEC 0
+/* end of Timezone and Daylight Saving Time */
+/* end of ISO-ANSI C layer */
+
+/* POSIX (Portable Operating System Interface) layer */
+
+
+/* Interprocess Communication (IPC) */
+
+
+/* Socket is in the 'Network' category */
+
+/* end of Interprocess Communication (IPC) */
+/* end of POSIX (Portable Operating System Interface) layer */
+/* end of C/C++ and POSIX layer */
 
 /* Network */
 
-/* Socket abstraction layer */
-
-/* end of Socket abstraction layer */
-
-/* Network interface device */
-
-/* end of Network interface device */
-
-/* light weight TCP/IP stack */
-
-/* end of light weight TCP/IP stack */
-
-/* AT commands */
-
-/* end of AT commands */
 /* end of Network */
-
-/* VBUS(Virtual Software BUS) */
-
-/* end of VBUS(Virtual Software BUS) */
 
 /* Utilities */
 
-#define RT_USING_RYM
-#define YMODEM_USING_FILE_TRANSFER
 /* end of Utilities */
 /* end of RT-Thread Components */
 
@@ -165,6 +176,10 @@
 /* Wiced WiFi */
 
 /* end of Wiced WiFi */
+
+/* CYW43012 WiFi */
+
+/* end of CYW43012 WiFi */
 /* end of Wi-Fi */
 
 /* IoT Cloud */
@@ -178,54 +193,43 @@
 
 /* language packages */
 
+/* JSON: JavaScript Object Notation, a lightweight data-interchange format */
+
+/* end of JSON: JavaScript Object Notation, a lightweight data-interchange format */
+
+/* XML: Extensible Markup Language */
+
+/* end of XML: Extensible Markup Language */
 /* end of language packages */
 
 /* multimedia packages */
 
+/* LVGL: powerful and easy-to-use embedded GUI library */
+
+/* end of LVGL: powerful and easy-to-use embedded GUI library */
+
+/* u8g2: a monochrome graphic library */
+
+/* end of u8g2: a monochrome graphic library */
 /* end of multimedia packages */
 
 /* tools packages */
 
-#define PKG_USING_EASYFLASH
-#define PKG_EASYFLASH_ENV
-#define PKG_EASYFLASH_ERASE_GRAN 4096
-#define PKG_EASYFLASH_WRITE_GRAN_1BIT
-#define PKG_EASYFLASH_WRITE_GRAN 1
-#define PKG_EASYFLASH_START_ADDR 0
-#define PKG_USING_EASYFLASH_V410
-#define PKG_EASYFLASH_VER_NUM 0x40100
 /* end of tools packages */
 
 /* system packages */
 
-#define PKG_USING_FAL
-#define FAL_DEBUG 0
-#define FAL_PART_HAS_TABLE_CFG
-#define FAL_USING_SFUD_PORT
-#define FAL_USING_NOR_FLASH_DEV_NAME "norflash0"
-#define PKG_USING_FAL_V00500
-#define PKG_FAL_VER_NUM 0x00500
-#define PKG_USING_LITTLEFS
-#define PKG_USING_LITTLEFS_LATEST_VERSION
-#define LFS_READ_SIZE 256
-#define LFS_PROG_SIZE 256
-#define LFS_BLOCK_SIZE 4096
-#define LFS_CACHE_SIZE 256
-#define LFS_BLOCK_CYCLES -1
-#define LFS_THREADSAFE
-#define LFS_LOOKAHEAD_MAX 128
-#define PKG_USING_SYSWATCH
-#define SYSWATCH_EXCEPT_RESOLVE_MODE_0
-#define SYSWATCH_EXCEPT_RESOLVE_MODE 0
-#define SYSWATCH_EXCEPT_TIMEOUT 60
-#define SYSWATCH_EXCEPT_CONFIRM_TMO 15
-#define SYSWATCH_EXCEPT_RESUME_DLY 15
-#define SYSWATCH_THREAD_PRIO 0
-#define SYSWATCH_THREAD_STK_SIZE 512
-#define SYSWATCH_THREAD_NAME "syswatch"
-#define SYSWATCH_WDT_NAME "wdt"
-#define SYSWATCH_WDT_TIMEOUT 5
-#define PKG_USING_SYSWATCH_LATEST_VERSION
+/* enhanced kernel services */
+
+/* end of enhanced kernel services */
+
+/* acceleration: Assembly language or algorithmic acceleration packages */
+
+/* end of acceleration: Assembly language or algorithmic acceleration packages */
+
+/* CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
+
+/* end of CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
 
 /* Micrium: Micrium software products porting for RT-Thread */
 
@@ -234,33 +238,98 @@
 
 /* peripheral libraries and drivers */
 
+/* sensors drivers */
+
+/* end of sensors drivers */
+
+/* touch drivers */
+
+/* end of touch drivers */
+#define PKG_USING_SIGNAL_LED
+#define PKG_USING_SIGNAL_LED_V130
+
+/* signalLed Options */
+
+/* end of signalLed Options */
+
+/* Kendryte SDK */
+
+/* end of Kendryte SDK */
 #define PKG_USING_AGILE_BUTTON
-#define PKG_AGILE_BUTTON_DEBUG
-#define PKG_AGILE_BUTTON_THREAD_STACK_SIZE 1536
-#define PKG_AGILE_BUTTON_THREAD_PRIORITY 15
-#define PKG_AGILE_BUTTON_USING_EXAMPLE
-#define PKG_USING_AGILE_BUTTON_LATEST_VERSION
-#define PKG_USING_AGILE_LED
-#define PKG_AGILE_LED_THREAD_STACK_SIZE 1024
-#define PKG_AGILE_LED_THREAD_PRIORITY 14
-#define PKG_USING_AGILE_LED_LATEST_VERSION
+#define PKG_AGILE_BUTTON_USING_THREAD_AUTO_INIT
+#define PKG_AGILE_BUTTON_THREAD_STACK_SIZE 1024
+#define PKG_AGILE_BUTTON_THREAD_PRIORITY 28
+#define PKG_USING_AGILE_BUTTON_V111
+#define PKG_AGILE_BUTTON_VER_NUM 0x10101
 /* end of peripheral libraries and drivers */
 
 /* AI packages */
 
 /* end of AI packages */
 
+/* Signal Processing and Control Algorithm Packages */
+
+/* end of Signal Processing and Control Algorithm Packages */
+
 /* miscellaneous packages */
 
+/* project laboratory */
+
+/* end of project laboratory */
 
 /* samples: kernel and components samples */
 
 /* end of samples: kernel and components samples */
 
-/* games: games run on RT-Thread console */
+/* entertainment: terminal games and other interesting software packages */
 
-/* end of games: games run on RT-Thread console */
+/* end of entertainment: terminal games and other interesting software packages */
 /* end of miscellaneous packages */
+
+/* Arduino libraries */
+
+
+/* Projects and Demos */
+
+/* end of Projects and Demos */
+
+/* Sensors */
+
+/* end of Sensors */
+
+/* Display */
+
+/* end of Display */
+
+/* Timing */
+
+/* end of Timing */
+
+/* Data Processing */
+
+/* end of Data Processing */
+
+/* Data Storage */
+
+/* Communication */
+
+/* end of Communication */
+
+/* Device Control */
+
+/* end of Device Control */
+
+/* Other */
+
+/* end of Other */
+
+/* Signal IO */
+
+/* end of Signal IO */
+
+/* Uncategorized */
+
+/* end of Arduino libraries */
 /* end of RT-Thread online packages */
 
 /* samples: kernel and components samples */

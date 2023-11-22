@@ -1,19 +1,18 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2023, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2021-11-16     RealThread   first version
+ * 2023-11-14     RealThread   first version
  */
 
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
-#include <stm32f4xx.h>
+#include <stm32wlxx.h>
 #include <drv_common.h>
-
 
 #ifdef __cplusplus
 extern "C"
@@ -23,19 +22,19 @@ extern "C"
 /*-------------------------- CHIP CONFIG BEGIN --------------------------*/
 
 #define CHIP_FAMILY_STM32
-#define CHIP_SERIES_STM32F4
-#define CHIP_NAME_STM32F411RE
+#define CHIP_SERIES_STM32WL
+#define CHIP_NAME_STM32WLE5CCUX
 
 /*-------------------------- CHIP CONFIG END --------------------------*/
 
 /*-------------------------- ROM/RAM CONFIG BEGIN --------------------------*/
 
 #define ROM_START              ((uint32_t)0x08000000)
-#define ROM_SIZE               (512 * 1024)
+#define ROM_SIZE               (256 * 1024)
 #define ROM_END                ((uint32_t)(ROM_START + ROM_SIZE))
 
 #define RAM_START              (0x20000000)
-#define RAM_SIZE               (128 * 1024)
+#define RAM_SIZE               (64 * 1024)
 #define RAM_END                (RAM_START + RAM_SIZE)
 
 /*-------------------------- ROM/RAM CONFIG END --------------------------*/
@@ -44,7 +43,7 @@ extern "C"
 
 #define BSP_CLOCK_SOURCE                  ("HSI")
 #define BSP_CLOCK_SOURCE_FREQ_MHZ         ((int32_t)0)
-#define BSP_CLOCK_SYSTEM_FREQ_MHZ         ((int32_t)100)
+#define BSP_CLOCK_SYSTEM_FREQ_MHZ         ((int32_t)48)
 
 /*-------------------------- CLOCK CONFIG END --------------------------*/
 
@@ -68,12 +67,8 @@ extern "C"
  */
 
 #define BSP_USING_UART1
-#define BSP_UART1_TX_PIN       "PA9"
-#define BSP_UART1_RX_PIN       "PA10"
-
-#define BSP_USING_UART2
-#define BSP_UART2_TX_PIN       "PA0"
-#define BSP_UART2_RX_PIN       "PA1"
+#define BSP_UART1_TX_PIN       "PB6"
+#define BSP_UART1_RX_PIN       "PB7"
 
 /*-------------------------- UART CONFIG END --------------------------*/
 
@@ -91,10 +86,10 @@ extern "C"
  *                             #define BSP_I2C1_SDA_PIN    GET_PIN(port, pin)   ->   GET_PIN(C, 12)
  */
 
-/*#define BSP_USING_I2C1*/
+#define BSP_USING_I2C1
 #ifdef BSP_USING_I2C1
-#define BSP_I2C1_SCL_PIN    GET_PIN(port, pin)
-#define BSP_I2C1_SDA_PIN    GET_PIN(port, pin)
+#define BSP_I2C1_SCL_PIN    GET_PIN(A, 12)
+#define BSP_I2C1_SDA_PIN    GET_PIN(A, 3)
 #endif
 
 /*#define BSP_USING_I2C2*/
@@ -123,7 +118,7 @@ extern "C"
 
 #define BSP_USING_SPI1
 #define BSP_USING_SPI2
-#define BSP_USING_SPI3
+/*#define BSP_USING_SPI3*/
 
 /*-------------------------- SPI CONFIG END --------------------------*/
 
@@ -248,7 +243,7 @@ extern "C"
  *                 such as     #define HAL_RTC_MODULE_ENABLED
  *
  */
-//#define BSP_USING_ONCHIP_RTC
+/*#define BSP_USING_ONCHIP_RTC*/
 
 /*-------------------------- RTC CONFIG END --------------------------*/
 

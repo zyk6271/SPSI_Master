@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2023, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
  * 2011-12-12     Yi Qiu      first version
+ * 2021-02-23     Leslie Lee  provide possibility for multi usb host
  */
 
 #include <rtthread.h>
@@ -13,9 +14,14 @@
 
 #define USB_THREAD_STACK_SIZE    4096
 
-static struct rt_messagequeue *usb_mq;
+#define DBG_TAG    "usb.host.hub"
+#define DBG_LVL     DBG_INFO
+#include <rtdbg.h>
+
+
+// static struct rt_messagequeue *usb_mq;
 static struct uclass_driver hub_driver;
-static struct uhub root_hub;
+// static struct uhub root_hub;
 
 static rt_err_t root_hub_ctrl(struct uhcd *hcd, rt_uint16_t port, rt_uint8_t cmd, void *args)
 {
@@ -74,7 +80,7 @@ static rt_err_t root_hub_ctrl(struct uhcd *hcd, rt_uint16_t port, rt_uint8_t cmd
         }
         break;
     default:
-        return RT_ERROR;
+        return -RT_ERROR;
     }
     return RT_EOK;
 }
@@ -92,7 +98,7 @@ void rt_usbh_root_hub_connect_handler(struct uhcd *hcd, rt_uint8_t port, rt_bool
     {
         hcd->roothub->port_status[port - 1] |= PORT_LSDA;
     }
-    rt_usbh_event_signal(&msg);
+    rt_usbh_event_signal(hcd, &msg);
 }
 
 void rt_usbh_root_hub_disconnect_handler(struct uhcd *hcd, rt_uint8_t port)
@@ -102,7 +108,7 @@ void rt_usbh_root_hub_disconnect_handler(struct uhcd *hcd, rt_uint8_t port)
     msg.content.hub = hcd->roothub;
     hcd->roothub->port_status[port - 1] |= PORT_CCSC;
     hcd->roothub->port_status[port - 1] &= ~PORT_CCS;
-    rt_usbh_event_signal(&msg);
+    rt_usbh_event_signal(hcd, &msg);
 }
 
 /**
@@ -399,7 +405,7 @@ static rt_err_t rt_usbh_hub_port_change(uhub_t hub)
         ret = rt_usbh_hub_get_port_status(hub, i + 1, &pstatus);
         if(ret != RT_EOK) continue;
 
-        RT_DEBUG_LOG(RT_DEBUG_USB, ("port %d status 0x%x\n", i + 1, pstatus));
+        LOG_D("port %d status 0x%x", i + 1, pstatus);
 
         /* check port status change */
         if (pstatus & PORT_CCSC)
@@ -470,13 +476,13 @@ static void rt_usbh_hub_irq(void* context)
 
     if(pipe->status != UPIPE_STATUS_OK)
     {
-        RT_DEBUG_LOG(RT_DEBUG_USB,("hub irq error\n"));
+        LOG_D("hub irq error");
         return;
     }
 
     rt_usbh_hub_port_change(hub);
 
-    RT_DEBUG_LOG(RT_DEBUG_USB,("hub int xfer...\n"));
+    LOG_D("hub int xfer...");
 
     /* parameter check */
      RT_ASSERT(pipe->inst->hcd != RT_NULL);
@@ -505,8 +511,6 @@ static rt_err_t rt_usbh_hub_enable(void *arg)
     int timeout = USB_TIMEOUT_LONG;
     /* paremeter check */
     RT_ASSERT(intf != RT_NULL);
-
-    RT_DEBUG_LOG(RT_DEBUG_USB, ("rt_usbh_hub_run\n"));
 
     /* get usb device instance */
     device = intf->device;
@@ -575,7 +579,7 @@ static rt_err_t rt_usbh_hub_enable(void *arg)
             pipe_in = rt_usb_instance_find_pipe(device,ep_desc->bEndpointAddress);
             if(pipe_in == RT_NULL)
             {
-                return RT_ERROR;
+                return -RT_ERROR;
             }
             rt_usb_pipe_add_callback(pipe_in,rt_usbh_hub_irq);
         }
@@ -607,7 +611,7 @@ static rt_err_t rt_usbh_hub_disable(void* arg)
     /* paremeter check */
     RT_ASSERT(intf != RT_NULL);
 
-    RT_DEBUG_LOG(RT_DEBUG_USB, ("rt_usbh_hub_stop\n"));
+    LOG_D("rt_usbh_hub_stop");
     hub = (uhub_t)intf->user_data;
 
     for(i=0; i<hub->num_ports; i++)
@@ -647,15 +651,14 @@ ucd_t rt_usbh_class_driver_hub(void)
  */
 static void rt_usbh_hub_thread_entry(void* parameter)
 {
+    uhcd_t hcd = (uhcd_t)parameter;
     while(1)
     {
         struct uhost_msg msg;
 
         /* receive message */
-        if(rt_mq_recv(usb_mq, &msg, sizeof(struct uhost_msg), RT_WAITING_FOREVER)
-            != RT_EOK ) continue;
-
-        //RT_DEBUG_LOG(RT_DEBUG_USB, ("msg type %d\n", msg.type));
+        if (rt_mq_recv(hcd->usb_mq, &msg, sizeof(struct uhost_msg), RT_WAITING_FOREVER) < 0)
+            continue;
 
         switch (msg.type)
         {
@@ -679,12 +682,12 @@ static void rt_usbh_hub_thread_entry(void* parameter)
  *
  * @return the error code, RT_EOK on successfully.
  */
-rt_err_t rt_usbh_event_signal(struct uhost_msg* msg)
+rt_err_t rt_usbh_event_signal(uhcd_t hcd, struct uhost_msg* msg)
 {
     RT_ASSERT(msg != RT_NULL);
 
     /* send message to usb message queue */
-    rt_mq_send(usb_mq, (void*)msg, sizeof(struct uhost_msg));
+    rt_mq_send(hcd->usb_mq, (void*)msg, sizeof(struct uhost_msg));
 
     return RT_EOK;
 }
@@ -698,16 +701,23 @@ rt_err_t rt_usbh_event_signal(struct uhost_msg* msg)
 void rt_usbh_hub_init(uhcd_t hcd)
 {
     rt_thread_t thread;
-    /* link root hub to hcd */
-    root_hub.is_roothub = RT_TRUE;
-    hcd->roothub = &root_hub;
-    root_hub.hcd = hcd;
-    root_hub.num_ports = hcd->num_ports;
+    /* create root hub for hcd */
+    hcd->roothub = rt_malloc(sizeof(struct uhub));
+    if(hcd->roothub == RT_NULL)
+    {
+        LOG_E("hcd->roothub: allocate buffer failed.");
+        return;
+    }
+    rt_memset(hcd->roothub, 0, sizeof(struct uhub));
+    hcd->roothub->is_roothub = RT_TRUE;
+    hcd->roothub->hcd = hcd;
+    hcd->roothub->num_ports = hcd->num_ports;
     /* create usb message queue */
-    usb_mq = rt_mq_create("usbh", 32, 16, RT_IPC_FLAG_FIFO);
+
+    hcd->usb_mq = rt_mq_create(hcd->parent.parent.name, 32, 16, RT_IPC_FLAG_FIFO);
 
     /* create usb hub thread */
-    thread = rt_thread_create("usbh", rt_usbh_hub_thread_entry, RT_NULL,
+    thread = rt_thread_create(hcd->parent.parent.name, rt_usbh_hub_thread_entry, hcd,
         USB_THREAD_STACK_SIZE, 8, 20);
     if(thread != RT_NULL)
     {
@@ -715,4 +725,3 @@ void rt_usbh_hub_init(uhcd_t hcd)
         rt_thread_startup(thread);
     }
 }
-

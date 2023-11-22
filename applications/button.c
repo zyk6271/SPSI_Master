@@ -19,17 +19,18 @@ static agile_btn_t *test_btn = RT_NULL;
 
 void test_single_callback(agile_btn_t *btn)
 {
-    heart_single();
+    test_btn_heart();
     LOG_I("heart single\r\n");
 }
+
 void test_hold_callback(agile_btn_t *btn)
 {
-    Flash_Boot_Change(0);
     beep_start(4);
     rt_thread_mdelay(3000);
-    reboot();
+    rt_hw_cpu_reset();
     LOG_I("heart hold\r\n");
 }
+
 void button_init(void)
 {
     test_btn = agile_btn_create(SW1, PIN_LOW, PIN_MODE_INPUT_PULLUP);

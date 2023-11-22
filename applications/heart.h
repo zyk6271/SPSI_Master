@@ -14,16 +14,16 @@
 
 typedef struct
 {
-    uint16_t freq;
+    uint8_t rf_id;
     uint8_t retry;
     uint8_t alive;
     uint8_t received;
-    uint8_t test;
-    uint8_t testreceived;
+    uint8_t test_received;
     int rssi;
+    int snr;
     uint8_t rssi_level;
     uint8_t startup;
-}rf_info;
+}rf_status;
 
 void heart_warning(void);
 uint8_t alive_detect(void);

@@ -33,6 +33,7 @@
 #define AT_CMD_SEMICOLON               ';'
 #define AT_CMD_CR                      '\r'
 #define AT_CMD_LF                      '\n'
+#define AT_CMD_NULL                    '\0'
 
 static at_server_t at_server_local = RT_NULL;
 static at_cmd_t cmd_table = RT_NULL;
@@ -399,14 +400,14 @@ static rt_err_t at_cmd_get_name(const char *cmd_buffer, char *cmd_name)
     RT_ASSERT(cmd_name);
     RT_ASSERT(cmd_buffer);
 
-    for (i = 0; i < strlen(cmd_buffer) + 1; i++)
+    for (i = 0; i < strlen(cmd_buffer); i++)
     {
         if (*(cmd_buffer + i) == AT_CMD_QUESTION_MARK || *(cmd_buffer + i) == AT_CMD_EQUAL_MARK
                 || *(cmd_buffer + i) == AT_CMD_CR
                 || (*(cmd_buffer + i) >= AT_CMD_CHAR_0 && *(cmd_buffer + i) <= AT_CMD_CHAR_9))
         {
             cmd_name_len = i;
-            memcpy(cmd_name, cmd_buffer, cmd_name_len);
+            rt_memcpy(cmd_name, cmd_buffer, cmd_name_len);
             *(cmd_name + cmd_name_len) = '\0';
 
             return RT_EOK;
@@ -474,6 +475,10 @@ static void server_parser(at_server_t server)
 
                 continue;
             }
+            else if (ch == AT_CMD_NULL)
+            {
+                continue;
+            }
             else
             {
                 at_server_printf("%c", ch);
@@ -508,7 +513,7 @@ static void server_parser(at_server_t server)
         }
 
 __retry:
-        memset(server->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
+        rt_memset(server->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
         server->cur_recv_len = 0;
     }
 }
@@ -538,7 +543,7 @@ int at_server_init(void)
     }
 
     /* initialize the AT commands table.*/
-#if defined(__CC_ARM)                                 /* ARM C Compiler */
+#if defined(__ARMCC_VERSION)                                 /* ARM C Compiler */
     extern const int RtAtCmdTab$$Base;
     extern const int RtAtCmdTab$$Limit;
     cmd_table = (at_cmd_t)&RtAtCmdTab$$Base;
@@ -564,7 +569,7 @@ int at_server_init(void)
     at_server_local->echo_mode = 1;
     at_server_local->status = AT_STATUS_UNINITIALIZED;
 
-    memset(at_server_local->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
+    rt_memset(at_server_local->recv_buffer, 0x00, AT_SERVER_RECV_BUFF_LEN);
     at_server_local->cur_recv_len = 0;
 
     at_server_local->rx_notice = rt_sem_create("at_svr", 0, RT_IPC_FLAG_FIFO);
@@ -600,7 +605,7 @@ int at_server_init(void)
     }
 
     at_server_local->get_char = at_server_getchar;
-    memcpy(at_server_local->end_mark, AT_CMD_END_MARK, sizeof(AT_CMD_END_MARK));
+    rt_memcpy(at_server_local->end_mark, AT_CMD_END_MARK, sizeof(AT_CMD_END_MARK));
 
     at_server_local->parser_entry = server_parser;
     at_server_local->parser = rt_thread_create("at_svr",
@@ -638,12 +643,12 @@ __exit:
 }
 INIT_COMPONENT_EXPORT(at_server_init);
 
-RT_WEAK void at_port_reset(void)
+rt_weak void at_port_reset(void)
 {
     LOG_E("The reset for AT server is not implement.");
 }
 
-RT_WEAK void at_port_factory_reset(void)
+rt_weak void at_port_factory_reset(void)
 {
     LOG_E("The factory reset for AT server is not implement.");
 }

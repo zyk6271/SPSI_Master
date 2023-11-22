@@ -26,6 +26,32 @@
 static volatile rt_tick_t rt_tick = 0;
 #endif /* RT_USING_SMP */
 
+#ifndef __on_rt_tick_hook
+    #define __on_rt_tick_hook()          __ON_HOOK_ARGS(rt_tick_hook, ())
+#endif
+
+#if defined(RT_USING_HOOK) && defined(RT_HOOK_USING_FUNC_PTR)
+static void (*rt_tick_hook)(void);
+
+/**
+ * @addtogroup Hook
+ */
+
+/**@{*/
+
+/**
+ * @brief This function will set a hook function, which will be invoked when tick increase
+ *
+ *
+ * @param hook the hook function
+ */
+void rt_tick_sethook(void (*hook)(void))
+{
+    rt_tick_hook = hook;
+}
+/**@}*/
+#endif /* RT_USING_HOOK */
+
 /**
  * @addtogroup Clock
  */
@@ -66,6 +92,8 @@ void rt_tick_increase(void)
 {
     struct rt_thread *thread;
     rt_base_t level;
+
+    RT_OBJECT_HOOK_CALL(rt_tick_hook, ());
 
     level = rt_hw_interrupt_disable();
 
@@ -136,7 +164,7 @@ RTM_EXPORT(rt_tick_from_millisecond);
  *
  * @return   Return passed millisecond from boot.
  */
-RT_WEAK rt_tick_t rt_tick_get_millisecond(void)
+rt_weak rt_tick_t rt_tick_get_millisecond(void)
 {
 #if 1000 % RT_TICK_PER_SECOND == 0u
     return rt_tick_get() * (1000u / RT_TICK_PER_SECOND);
@@ -148,4 +176,3 @@ RT_WEAK rt_tick_t rt_tick_get_millisecond(void)
 }
 
 /**@}*/
-

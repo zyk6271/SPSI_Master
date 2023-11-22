@@ -1,32 +1,12 @@
 [
  {
-  "path": "/packages/tools/EasyFlash", 
-  "ver": "v4.1.0", 
-  "name": "EASYFLASH"
- }, 
- {
-  "path": "/packages/system/fal", 
-  "ver": "v0.5.0", 
-  "name": "FAL"
- }, 
- {
-  "path": "/packages/system/littlefs", 
-  "ver": "latest", 
-  "name": "LITTLEFS"
- }, 
- {
-  "path": "/packages/system/syswatch", 
-  "ver": "latest", 
-  "name": "SYSWATCH"
+  "path": "/packages/peripherals/SignalLed", 
+  "ver": "v1.3.0", 
+  "name": "SIGNAL_LED"
  }, 
  {
   "path": "/packages/peripherals/agile_button", 
-  "ver": "latest", 
+  "ver": "v1.1.1", 
   "name": "AGILE_BUTTON"
- }, 
- {
-  "path": "/packages/peripherals/agile_led", 
-  "ver": "latest", 
-  "name": "AGILE_LED"
  }
 ]

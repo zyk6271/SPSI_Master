@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2023, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
- * 2021-11-16     RealThread   first version
+ * 2023-11-14     RealThread   first version
  */
 
 #include <rtthread.h>
 #include <board.h>
 #include <drv_common.h>
 
-RT_WEAK void rt_hw_board_init()
+rt_weak void rt_hw_board_init()
 {
     extern void hw_board_init(char *clock_src, int32_t clock_src_freq, int32_t clock_target_freq);
 
