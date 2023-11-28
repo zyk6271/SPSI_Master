@@ -111,8 +111,8 @@ void rf_pipe_task_callback(void *parameter)
                 if (rf_pipe.RxLen != 0)
                 {
                     LOG_D("ReceiveData %s\r\n",buffer);
+                    rf_pipe_rx_callback(rf_pipe.ubRssi,0,rf_pipe.RXBuff,rf_pipe.RxLen);
                 }
-                rf_pipe_rx_callback(rf_pipe.ubRssi,0,rf_pipe.RXBuff,rf_pipe.RxLen);
                 AX5043Receiver_Continuous(&rf_pipe);
                 break;
             case trxstate_wait_xtal:     //3

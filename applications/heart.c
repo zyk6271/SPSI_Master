@@ -33,7 +33,7 @@ uint8_t get_srand_time(void)
     return value;
 }
 
-void rf_heart_check(rf_status *handle,uint8_t *receive_flag)
+uint8_t rf_heart_check(rf_status *handle,uint8_t *receive_flag)
 {
     if(*receive_flag == 0)
     {
@@ -47,11 +47,13 @@ void rf_heart_check(rf_status *handle,uint8_t *receive_flag)
             rf_offline(handle);
             alive_count_increase(handle->rf_id);
         }
+        return RT_ERROR;
     }
     else
     {
         handle->retry = 0;
         LOG_D("RF %s heart successfully\n",(handle->rf_id > 0)?"LoRa":"PIPE",handle->retry);
+        return RT_EOK;
     }
 }
 
@@ -110,8 +112,14 @@ void heart_callback(void *parameter)
             rf_lora_urgent_enqueue(0, psi_status_get());
             rt_thread_mdelay(3000);
             heart_record_write(1,rf_lora_status.received,rf_lora_status.retry,rf_lora_status.rssi,rf_lora_status.snr,0);
-            rf_heart_check(&rf_lora_status,&rf_lora_status.received);
-            rt_thread_mdelay(get_srand_time() * 1000);
+            if(rf_heart_check(&rf_lora_status,&rf_lora_status.received) == RT_EOK)
+            {
+                rt_thread_mdelay(30 * 1000);
+            }
+            else
+            {
+                rt_thread_mdelay(get_srand_time() * 1000);
+            }
         }
         else
         {
@@ -120,8 +128,14 @@ void heart_callback(void *parameter)
             rf_pipe_urgent_enqueue(0, psi_status_get());
             rt_thread_mdelay(3000);
             heart_record_write(0,rf_pipe_status.received,rf_pipe_status.retry,rf_pipe_status.rssi,rf_pipe_status.snr,0);
-            rf_heart_check(&rf_pipe_status,&rf_pipe_status.received);
-            rt_thread_mdelay(get_srand_time() * 1000);
+            if(rf_heart_check(&rf_pipe_status,&rf_pipe_status.received) == RT_EOK)
+            {
+                rt_thread_mdelay(30 * 1000);
+            }
+            else
+            {
+                rt_thread_mdelay(get_srand_time() * 1000);
+            }
         }
     }
 }

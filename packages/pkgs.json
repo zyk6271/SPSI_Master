@@ -1,5 +1,10 @@
 [
  {
+  "path": "/packages/system/syswatch", 
+  "ver": "latest", 
+  "name": "SYSWATCH"
+ }, 
+ {
   "path": "/packages/peripherals/SignalLed", 
   "ver": "v1.3.0", 
   "name": "SIGNAL_LED"
