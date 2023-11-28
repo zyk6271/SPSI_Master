@@ -36,7 +36,7 @@ void rf_offline(rf_status *handle)
         psi_led_resume();
         beep_start(2);
     }
-    else
+    else if(rf_pipe_status.alive ==0 && rf_lora_status.alive == 0)
     {
         psi_led_lost();
         beep_start(3);

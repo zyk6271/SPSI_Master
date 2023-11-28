@@ -59,7 +59,7 @@ void psi_led_lost(void)
     if(psi_lost == 0)
     {
         psi_lost = 1;
-        led_transmitter_lost();
+        //led_transmitter_lost();
         led_receiver_lost();
     }
 }

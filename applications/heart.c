@@ -44,6 +44,7 @@ uint8_t rf_heart_check(rf_status *handle,uint8_t *receive_flag)
         }
         else
         {
+            handle->alive = 0;
             rf_offline(handle);
             alive_count_increase(handle->rf_id);
         }
